@@ -1,129 +1,164 @@
-/* 全局样式 */
+/* 全局样式改进 */
 :root {
-    --primary-color: #4a6da7;
-    --secondary-color: #f9a825;
-    --background-color: #f8f9fa;
+    --primary-color: #ff7043; /* 温暖的橙色 */
+    --secondary-color: #2196f3; /* 清爽的蓝色 */
+    --background-color: #f5f5f5;
     --card-background: #ffffff;
-    --text-color: #333333;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #17a2b8;
+    --text-color: #424242;
+    --success-color: #4caf50;
+    --danger-color: #f44336;
+    --warning-color: #ff9800;
+    --info-color: #00bcd4;
+    --light-gray: #eeeeee;
+    --dark-gray: #757575;
+    --border-radius: 12px;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+    --transition: all 0.3s ease;
 }
 
 body {
-    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    font-family: 'Segoe UI', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: var(--background-color);
     color: var(--text-color);
-    padding-bottom: 70px; /* 为底部导航栏留出空间 */
+    padding-bottom: 70px;
     margin: 0;
+    line-height: 1.6;
 }
 
-/* 加载指示器 */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-/* 主内容区域 */
+/* 页面容器 */
 .main-content {
     padding: 15px;
     margin-bottom: 60px;
     min-height: calc(100vh - 60px);
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-/* 标签内容区域 */
+/* 动画效果 */
 .tab-content {
     animation: fade-in 0.3s ease-in-out;
 }
 
 @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* 卡片样式 */
+/* 卡片样式改进 */
 .card {
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
     margin-bottom: 20px;
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: var(--transition);
+    border: none;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
 }
 
-/* 菜品卡片 */
+.card-header {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 15px 20px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-footer {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 15px 20px;
+}
+
+/* 菜品卡片样式改进 */
 .dish-card {
     position: relative;
     cursor: pointer;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .dish-card .card-img-top {
     height: 180px;
     object-fit: cover;
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
 }
 
 .dish-price {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: var(--secondary-color);
+    top: 15px;
+    right: 15px;
+    background-color: var(--primary-color);
     color: white;
     padding: 5px 10px;
     border-radius: 20px;
     font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .dish-rating {
+    display: inline-flex;
+    align-items: center;
     color: #ffc107;
-    margin-right: 5px;
+    background-color: rgba(255, 193, 7, 0.1);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
 }
 
-/* 类别标签 */
+.dish-rating i {
+    margin-right: 4px;
+}
+
+/* 类别导航改进 */
 .category-nav {
     display: flex;
     overflow-x: auto;
-    padding: 10px 0;
-    margin-bottom: 15px;
+    padding: 15px 0;
+    margin-bottom: 20px;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+}
+
+.category-nav::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
 }
 
 .category-item {
     flex: 0 0 auto;
-    padding: 8px 15px;
-    margin-right: 10px;
+    padding: 10px 20px;
+    margin-right: 12px;
     border-radius: 20px;
-    background-color: #e9ecef;
+    background-color: var(--light-gray);
     cursor: pointer;
     white-space: nowrap;
-    transition: background-color 0.2s, color 0.2s;
+    transition: var(--transition);
+    font-weight: 500;
 }
 
 .category-item.active {
     background-color: var(--primary-color);
     color: white;
+    box-shadow: 0 3px 5px rgba(255, 112, 67, 0.3);
 }
 
-/* 底部导航栏 */
+/* 底部导航栏改进 */
 .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     background-color: var(--card-background);
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-around;
     padding: 10px 0;
@@ -136,10 +171,12 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: var(--text-color);
+    color: var(--dark-gray);
     text-decoration: none;
     cursor: pointer;
     flex: 1;
+    position: relative;
+    transition: var(--transition);
 }
 
 .nav-item.active {
@@ -148,17 +185,18 @@ body {
 
 .nav-icon {
     font-size: 1.5rem;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .nav-text {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
 .cart-badge {
     position: absolute;
     top: -5px;
-    right: -10px;
+    right: calc(50% - 20px);
     background-color: var(--danger-color);
     color: white;
     border-radius: 50%;
@@ -168,30 +206,65 @@ body {
     justify-content: center;
     align-items: center;
     font-size: 0.7rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* 详情页 */
+/* 按钮样式改进 */
+.btn {
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #f4511e; /* 深橙色 */
+    border-color: #f4511e;
+    box-shadow: 0 4px 8px rgba(255, 112, 67, 0.3);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* 输入框样式改进 */
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 10px 15px;
+    border: 1px solid #e0e0e0;
+    transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 112, 67, 0.15);
+}
+
+/* 菜品详情页样式改进 */
 .dish-detail-img {
     width: 100%;
     height: 300px;
     object-fit: cover;
-    border-radius: 10px;
-}
-
-/* 图片编辑样式 */
-.current-image {
-    max-width: 100%;
-    height: auto;
-    max-height: 300px;
-    display: block;
-    margin: 0 auto;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
 }
 
 .back-button {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: rgba(255, 255, 255, 0.8);
+    top: 20px;
+    left: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -200,12 +273,22 @@ body {
     align-items: center;
     cursor: pointer;
     z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    transition: var(--transition);
 }
 
-/* 评价样式 */
+.back-button:hover {
+    transform: scale(1.1);
+}
+
+/* 评价样式改进 */
 .review-item {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--light-gray);
     padding: 15px 0;
+}
+
+.review-item:last-child {
+    border-bottom: none;
 }
 
 .review-header {
@@ -215,16 +298,22 @@ body {
 }
 
 .review-user {
-    font-weight: bold;
+    font-weight: 500;
+    color: var(--text-color);
 }
 
 .review-date {
-    color: #888;
+    color: var(--dark-gray);
     font-size: 0.85rem;
+}
+
+.review-rating {
+    margin-bottom: 10px;
 }
 
 .review-comment {
     margin-bottom: 10px;
+    line-height: 1.5;
 }
 
 .review-images {
@@ -238,24 +327,35 @@ body {
     width: 100px;
     height: 100px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
+    transition: var(--transition);
 }
 
-/* 购物车样式 */
+.review-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 购物车样式改进 */
 .cart-item {
     display: flex;
     align-items: center;
     padding: 15px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.cart-item:last-child {
+    border-bottom: none;
 }
 
 .cart-item-img {
     width: 80px;
     height: 80px;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: 8px;
     margin-right: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .cart-item-info {
@@ -273,117 +373,153 @@ body {
 }
 
 .quantity-btn {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
     background-color: #f8f9fa;
     cursor: pointer;
+    transition: var(--transition);
+}
+
+.quantity-btn:hover {
+    background-color: var(--light-gray);
 }
 
 .quantity-input {
     width: 40px;
-    height: 30px;
+    height: 32px;
     text-align: center;
-    margin: 0 5px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    margin: 0 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
 }
 
-/* 订单样式 */
-.order-card {
-    margin-bottom: 15px;
-}
-
-.order-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 15px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #eee;
-}
-
-.order-id {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.order-date {
-    font-size: 0.9rem;
-    color: #888;
-}
-
-.order-items {
-    padding: 15px;
-}
-
-.order-total {
-    font-weight: bold;
-    text-align: right;
-    padding: 10px 15px;
-    border-top: 1px solid #eee;
-}
-
+/* 订单状态标签样式改进 */
 .order-status {
     display: inline-block;
-    padding: 3px 8px;
-    border-radius: 3px;
+    padding: 4px 10px;
+    border-radius: 6px;
     font-size: 0.85rem;
-    margin-left: 10px;
+    font-weight: 500;
 }
 
 .status-pending {
-    background-color: var(--warning-color);
-    color: #333;
+    background-color: rgba(255, 152, 0, 0.2);
+    color: #e65100;
 }
 
 .status-cooking {
-    background-color: var(--info-color);
-    color: white;
+    background-color: rgba(0, 188, 212, 0.2);
+    color: #006064;
 }
 
 .status-ready {
-    background-color: var(--primary-color);
-    color: white;
+    background-color: rgba(33, 150, 243, 0.2);
+    color: #0d47a1;
 }
 
 .status-completed {
-    background-color: var(--success-color);
-    color: white;
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #1b5e20;
 }
 
 .status-cancelled {
-    background-color: var(--danger-color);
-    color: white;
+    background-color: rgba(244, 67, 54, 0.2);
+    color: #b71c1c;
 }
 
-/* 二维码样式 */
-.qr-code-container {
+/* 图片查看器改进 */
+.image-viewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
     display: flex;
     justify-content: center;
-    margin: 20px 0;
+    align-items: center;
+    z-index: 2000;
+    cursor: pointer;
+    animation: fade-in 0.3s ease;
+}
+
+.image-viewer-content {
+    max-width: 90%;
+    max-height: 90%;
+    position: relative;
+}
+
+.full-image {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+}
+
+/* 二维码样式改进 */
+.qr-code-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 15px 0;
 }
 
 .qr-code {
-    width: 150px;
-    height: 150px;
+    width: 180px;
+    height: 180px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    background: white;
+    transition: var(--transition);
 }
 
-/* 通知样式 */
+.qr-code:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* 加载指示器改进 */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.spinner-border.text-primary {
+    color: var(--primary-color) !important;
+}
+
+/* 通知样式改进 */
 .notification {
     position: fixed;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 12px 20px;
+    border-radius: 8px;
     color: white;
     z-index: 1000;
     animation: slide-down 0.3s, fade-out 0.3s 2.7s;
     opacity: 0;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    width: auto;
+    max-width: 80%;
+    text-align: center;
 }
 
 .notification.success {
@@ -402,101 +538,14 @@ body {
     background-color: var(--info-color);
 }
 
-@keyframes slide-down {
-    from {
-        transform: translate(-50%, -20px);
-        opacity: 0;
-    }
-    to {
-        transform: translate(-50%, 0);
-        opacity: 1;
-    }
-}
-
-@keyframes fade-out {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-
-/* 相机相关样式 */
-.camera-container {
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.camera-preview {
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.camera-controls {
-    display: flex;
-    justify-content: center;
-    margin-top: 15px;
-}
-
-.camera-button {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: var(--danger-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.camera-inner {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: white;
-}
-
-.captured-image {
-    width: 100%;
-    max-height: 300px;
-    object-fit: contain;
-    border-radius: 10px;
-    margin-top: 15px;
-}
-
-/* 图片查看器 */
-.image-viewer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-    cursor: pointer;
-}
-
-.image-viewer-content {
-    max-width: 90%;
-    max-height: 90%;
-}
-
-.full-image {
-    max-width: 100%;
-    max-height: 90vh;
-    object-fit: contain;
-}
-
 /* 响应式调整 */
 @media (min-width: 768px) {
     .main-content {
-        max-width: 800px;
-        margin: 0 auto;
+        padding: 25px;
+    }
+    
+    .card {
+        margin-bottom: 25px;
     }
     
     .dish-card .card-img-top {
@@ -523,6 +572,763 @@ body {
     }
     
     .dish-card .card-img-top {
-        height: 150px;
+        height: 160px;
     }
+    
+    .btn {
+        padding: 6px 14px;
+    }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #9e9e9e;
+}
+
+/* 订单管理页面额外样式 */
+.status-tabs {
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.status-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-tab {
+    position: relative;
+    padding: 8px 16px;
+    background-color: var(--light-gray);
+    border-radius: 8px;
+    cursor: pointer;
+    margin-right: 10px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.filter-tab.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.filter-name {
+    margin-right: 5px;
+}
+
+.filter-count {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.filter-tab:not(.active) .filter-count {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.order-card {
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.order-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+}
+
+.item-pill {
+    display: inline-block;
+    background-color: var(--light-gray);
+    border-radius: 20px;
+    padding: 3px 10px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+}
+
+.note-section {
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+}
+
+/* 搜索框样式 */
+.search-box .form-control:focus {
+    box-shadow: none;
+}
+
+.search-box .input-group {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.search-box .input-group-text {
+    border-color: #e0e0e0;
+}
+
+/* 菜品详情页订单操作按钮 */
+.dish-actions {
+    position: fixed;
+    bottom: 70px;
+    left: 0;
+    right: 0;
+    padding: 15px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-top: 1px solid var(--light-gray);
+    backdrop-filter: blur(5px);
+    z-index: 100;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 评分控件样式 */
+.rating-control {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.rating-star {
+    font-size: 2rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: color 0.2s;
+    margin-right: 5px;
+}
+
+.rating-star.active {
+    color: #ffc107;
+}
+
+.rating-star:hover {
+    transform: scale(1.1);
+}
+
+/* 图片上传组件 */
+.image-upload {
+    margin-bottom: 15px;
+}
+
+.upload-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.upload-preview-item {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.upload-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upload-preview-remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.upload-btn {
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.upload-btn:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(255, 112, 67, 0.05);
+}
+
+/* 动画和过渡效果 */
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.3s;
+}
+.fade-enter, .fade-leave-to {
+    opacity: 0;
+}
+
+.slide-up-enter-active, .slide-up-leave-active {
+    transition: transform 0.3s, opacity 0.3s;
+}
+.slide-up-enter, .slide-up-leave-to {
+    transform: translateY(20px);
+    opacity: 0;
+}
+/* 额外的样式优化 */
+.review-display {
+    background-color: rgba(0, 0, 0, 0.02);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+/* 为评价星星添加悬停效果 */
+.rating-stars {
+    display: flex;
+}
+
+.rating-stars i {
+    margin-right: 5px;
+    transition: transform 0.2s, color 0.2s;
+}
+
+.rating-stars i:hover {
+    transform: scale(1.2);
+}
+
+/* 订单卡片附加样式 */
+.order-card {
+    border-left: 4px solid var(--light-gray);
+    transition: all 0.3s ease;
+}
+
+.order-card:hover {
+    border-left-color: var(--primary-color);
+}
+
+/* 状态颜色 */
+.order-card.status-pending {
+    border-left-color: var(--warning-color);
+}
+
+.order-card.status-cooking {
+    border-left-color: var(--info-color);
+}
+
+.order-card.status-ready {
+    border-left-color: var(--primary-color);
+}
+
+.order-card.status-completed {
+    border-left-color: var(--success-color);
+}
+
+.order-card.status-cancelled {
+    border-left-color: var(--danger-color);
+}
+
+/* 改进的菜品详情页 */
+.dish-detail-section {
+    margin-bottom: 30px;
+}
+
+.dish-detail-section h5 {
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--dark-gray);
+    display: flex;
+    align-items: center;
+}
+
+.dish-detail-section h5 i {
+    margin-right: 8px;
+}
+
+.ingredients-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.ingredient-tag {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: var(--secondary-color);
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+}
+
+.steps-list {
+    counter-reset: step-counter;
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.step-item {
+    position: relative;
+    padding-left: 40px;
+    padding-bottom: 20px;
+    margin-bottom: 10px;
+}
+
+.step-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 30px;
+    height: calc(100% - 30px);
+    width: 2px;
+    background-color: var(--light-gray);
+}
+
+.step-item::after {
+    counter-increment: step-counter;
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* 动画效果 */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+
+/* 响应式调整 */
+@media (max-width: 576px) {
+    .dish-detail-img {
+        height: 200px;
+    }
+    
+    .order-status {
+        display: inline-block;
+        margin-top: 5px;
+        margin-left: 0 !important;
+    }
+    
+    .filter-tab {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .filter-count {
+        font-size: 0.7rem;
+    }
+}
+/* 添加到购物车的动画效果 */
+@keyframes addToCartPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(255, 112, 67, 0.3);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.add-to-cart-animation {
+    animation: addToCartPulse 0.5s ease;
+}
+
+/* 购物车按钮悬停效果 */
+.btn-add-to-cart {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-add-to-cart::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+    transition: all 0.5s ease;
+}
+
+.btn-add-to-cart:hover::before {
+    left: 100%;
+}
+
+/* 添加成功的提示样式 */
+.add-to-cart-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(76, 175, 80, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    backdrop-filter: blur(5px);
+    animation: toastFadeIn 0.3s, toastFadeOut 0.3s 2s forwards;
+    pointer-events: none;
+}
+
+.add-to-cart-toast i {
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+
+@keyframes toastFadeIn {
+    from { 
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes toastFadeOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+}
+
+/* 购物车图标抖动动画 */
+@keyframes cartShake {
+    0% { transform: rotate(0); }
+    15% { transform: rotate(5deg); }
+    30% { transform: rotate(-5deg); }
+    45% { transform: rotate(4deg); }
+    60% { transform: rotate(-4deg); }
+    75% { transform: rotate(2deg); }
+    85% { transform: rotate(-2deg); }
+    92% { transform: rotate(1deg); }
+    100% { transform: rotate(0); }
+}
+
+.cart-shake {
+    animation: cartShake 0.6s ease-in-out;
+}
+
+/* 购物车徽章动画 */
+@keyframes badgePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.badge-pulse {
+    animation: badgePulse 0.5s ease-in-out;
+}
+/* 优化的数量选择器样式 */
+.quantity-control {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background-color: white;
+}
+
+.quantity-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.quantity-btn:hover {
+    background-color: #e9ecef;
+}
+
+.quantity-btn:active {
+    background-color: #dee2e6;
+}
+
+.quantity-btn i {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.quantity-input {
+    width: 40px;
+    height: 32px;
+    text-align: center;
+    border: none;
+    border-left: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
+    outline: none;
+    -moz-appearance: textfield; /* Firefox */
+}
+
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* 购物车卡片项目样式 */
+.cart-item {
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.cart-item:hover {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.cart-item-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.cart-item:hover .cart-item-img {
+    transform: scale(1.05);
+}
+
+/* 购物车删除按钮 */
+.cart-remove-btn {
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.cart-remove-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* 购物车数量与价格区域 */
+.cart-item-quantity {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cart-item-price {
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* 修复底部内容显示问题 */
+body {
+    padding-bottom: 80px !important; /* 确保底部有足够空间 */
+}
+
+.main-content {
+    padding-bottom: 100px !important; /* 增加内容底部的空间 */
+    margin-bottom: 70px !important;
+}
+
+/* 确保底部导航栏不遮挡内容 */
+.bottom-nav {
+    z-index: 1000;
+    height: 65px;
+    padding: 8px 0;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* 修复红烧肉等菜品详情页内容溢出问题 */
+.dish-detail {
+    padding-bottom: 80px;
+}
+
+.reviews-section {
+    margin-bottom: 80px;
+}
+
+/* 丝滑的类别切换效果 */
+.category-nav {
+    display: flex;
+    overflow-x: auto;
+    padding: 15px 0;
+    margin-bottom: 20px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    background-color: var(--background-color);
+    z-index: 100;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.category-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.category-item {
+    flex: 0 0 auto;
+    padding: 10px 20px;
+    margin-right: 12px;
+    border-radius: 20px;
+    background-color: var(--light-gray);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-item.active {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 3px 10px rgba(var(--primary-color-rgb), 0.3);
+}
+
+/* 添加点击波纹效果 */
+.category-item::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+}
+
+.category-item:active::after {
+    animation: ripple 0.4s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0) translate(-50%, -50%);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(20) translate(-50%, -50%);
+        opacity: 0;
+    }
+}
+
+/* 菜品列表过渡效果 */
+.dishes-container-enter-active, 
+.dishes-container-leave-active {
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.dishes-container-enter, 
+.dishes-container-leave-to {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+/* 确保加载指示器居中 */
+.loading-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+/* 添加类别切换过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s;
+}
+.fade-enter,
+.fade-leave-to {
+    opacity: 0;
+}
+
+/* 向左滑动效果 */
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active {
+    transition: transform 0.3s, opacity 0.3s;
+    position: relative;
+}
+
+.slide-left-enter {
+    opacity: 0;
+    transform: translateX(10px);
+}
+
+.slide-left-leave-to {
+    opacity: 0;
+    transform: translateX(-10px);
+}
+
+.slide-right-enter {
+    opacity: 0;
+    transform: translateX(-10px);
+}
+
+.slide-right-leave-to {
+    opacity: 0;
+    transform: translateX(10px);
 }

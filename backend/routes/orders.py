@@ -2,9 +2,6 @@ from flask import Blueprint, jsonify, request
 import json
 import os
 import uuid
-import qrcode
-from io import BytesIO
-import base64
 from datetime import datetime
 
 orders_bp = Blueprint('orders', __name__)
@@ -24,23 +21,6 @@ def write_json_file(file_path, data):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
-
-# 生成订单二维码
-def generate_qr_code(data):
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(data)
-    qr.make(fit=True)
-    
-    img = qr.make_image(fill_color="black", back_color="white")
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    return f"data:image/png;base64,{img_str}"
 
 # 获取所有订单
 @orders_bp.route('/', methods=['GET'])
@@ -83,10 +63,7 @@ def get_order_by_id(order_id):
         if not order:
             return jsonify({"error": "订单未找到"}), 404
         
-        # 为订单生成二维码
-        order_data = json.dumps(order, ensure_ascii=False)
-        order['qr_code'] = generate_qr_code(order_data)
-        
+        # 不需要生成二维码，前端会使用静态图片
         return jsonify(order)
     except Exception as e:
         print(f"获取订单详情错误: {str(e)}")
@@ -156,10 +133,6 @@ def create_order():
         
         # 写入更新的订单列表
         write_json_file(orders_path, orders)
-        
-        # 为订单生成二维码
-        order_data = json.dumps(new_order, ensure_ascii=False)
-        new_order['qr_code'] = generate_qr_code(order_data)
         
         return jsonify(new_order), 201
     except Exception as e:

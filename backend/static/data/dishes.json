@@ -257,8 +257,8 @@
         "id": "777df5d6-badc-425c-afa6-975cbfd227ff",
         "name": "家常菜",
         "category": "hot",
-        "price": 11.0,
-        "description": "123",
+        "price": 11,
+        "description": "测试",
         "ingredients": [
             "1",
             "2",
@@ -269,6 +269,6 @@
             "1;2;3;4"
         ],
         "image_path": "/static/images/dishes/ebaf9680-e7bf-468c-bf7f-f71785b2f35c.jpg",
-        "timestamp": "2025-03-15T00:32:51.881469"
+        "timestamp": "2025-03-15T02:04:58.809302"
     }
 ]

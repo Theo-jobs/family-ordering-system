@@ -40,6 +40,12 @@ new Vue({
         // 定时器ID
         notificationTimer: null
     },
+    computed: {
+        // 计算购物车总商品数（考虑数量）
+        cartTotalItems() {
+            return this.cartItems.reduce((total, item) => total + item.quantity, 0);
+        }
+    },
     created() {
         // 从本地存储加载购物车数据
         this.loadCart();
@@ -54,6 +60,30 @@ new Vue({
         console.log("Vue应用已挂载");
         console.log("当前活动标签:", this.activeTab);
         console.log("当前类别:", this.activeCategory);
+        
+        // 添加页面加载动画
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        });
+        
+        // 添加网络请求拦截器
+        axios.interceptors.request.use(config => {
+            this.loading = true;
+            return config;
+        }, error => {
+            this.loading = false;
+            return Promise.reject(error);
+        });
+        
+        axios.interceptors.response.use(response => {
+            this.loading = false;
+            return response;
+        }, error => {
+            this.loading = false;
+            return Promise.reject(error);
+        });
     },
     methods: {
         // 标签切换
@@ -64,6 +94,11 @@ new Vue({
             // 如果切换到订单标签，刷新订单数据
             if (tab === 'orders') {
                 this.fetchOrders();
+            }
+            
+            // 如果切换到菜单标签，滚动到顶部
+            if (tab === 'menu') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         },
         
@@ -83,6 +118,9 @@ new Vue({
                 .then(response => {
                     this.selectedDish = response.data;
                     this.activeTab = 'dish-detail';
+                    
+                    // 滚动到顶部
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 })
                 .catch(error => {
                     console.error('获取菜品详情失败:', error);
@@ -98,6 +136,28 @@ new Vue({
             console.log("编辑菜品:", dish.id);
             this.selectedDish = dish;
             this.activeTab = 'edit-dish';
+        },
+        
+        // 处理菜品删除
+        handleDishDeleted(dishId) {
+            console.log("菜品已删除:", dishId);
+            // 如果删除的菜品在当前类别中，刷新菜单
+            if (this.$refs.menuComponent) {
+                this.$refs.menuComponent.fetchDishes();
+            }
+        },
+        
+        // 处理订单删除
+        handleOrderDeleted(orderId) {
+            console.log("订单已删除:", orderId);
+            
+            // 从本地订单列表中移除已删除的订单
+            if (this.orders && this.orders.length > 0) {
+                this.orders = this.orders.filter(order => order.id !== orderId);
+            }
+            
+            // 重置选中的订单
+            this.selectedOrder = null;
         },
         
         // 更新菜品后处理
@@ -119,23 +179,31 @@ new Vue({
             }
         },
         
-        // 添加到购物车
+        // 改进的添加到购物车方法 (app.js)
+        // 修复后的添加到购物车方法 (app.js)
         addToCart(item) {
             console.log("添加到购物车:", item);
-            // 检查购物车中是否已有该菜品
-            const existingIndex = this.cartItems.findIndex(cartItem => cartItem.dish_id === (item.dish_id || item.id));
+            // 确保菜品ID取到正确的值
+            const dishId = item.id || item.dish_id;
             
-            if (existingIndex !== -1) {
+            // 确保数量是数字类型
+            const quantity = parseInt(item.quantity) || 1;
+            
+            // 检查购物车中是否已有该菜品
+            const existingIndex = this.cartItems.findIndex(cartItem => cartItem.dish_id === dishId);
+            const isExisting = existingIndex !== -1;
+            
+            if (isExisting) {
                 // 如果已存在，增加数量
-                this.cartItems[existingIndex].quantity += item.quantity || 1;
+                this.cartItems[existingIndex].quantity += quantity;
                 console.log("增加现有购物车项数量:", this.cartItems[existingIndex]);
             } else {
                 // 否则添加新项目
                 const newItem = {
-                    dish_id: item.id || item.dish_id,
+                    dish_id: dishId,
                     dish_name: item.name || item.dish_name,
                     price: item.price,
-                    quantity: item.quantity || 1,
+                    quantity: quantity,
                     image_path: item.image_path
                 };
                 
@@ -146,15 +214,86 @@ new Vue({
             // 保存购物车数据到本地存储
             this.saveCart();
             
-            // 显示通知
-            this.showNotification('已添加到购物车', 'success');
+            // 显示自定义添加成功提示
+            this.showAddToCartToast(item.name || item.dish_name, quantity, isExisting);
+            
+            // 触发购物车图标抖动动画
+            this.animateCartIcon();
             
             // 如果在菜品详情页，返回菜单页
             if (this.activeTab === 'dish-detail') {
-                this.activeTab = 'menu';
+                setTimeout(() => {
+                    this.activeTab = 'menu';
+                }, 500); // 添加短暂延迟，让用户能看到添加动画
             }
         },
-        
+
+        // 计算购物车总数量的方法（修复版）
+        cartTotalItems() {
+            return this.cartItems.reduce((total, item) => {
+                // 确保数量是数字类型
+                const quantity = parseInt(item.quantity) || 0;
+                return total + quantity;
+            }, 0);
+        },
+        // 显示添加到购物车的提示
+        showAddToCartToast(dishName, quantity, isExisting) {
+            // 移除任何现有的提示
+            const existingToast = document.querySelector('.add-to-cart-toast');
+            if (existingToast) {
+                document.body.removeChild(existingToast);
+            }
+            
+            // 创建提示元素
+            const toast = document.createElement('div');
+            toast.className = 'add-to-cart-toast';
+            
+            // 设置提示内容
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-check-circle';
+            toast.appendChild(icon);
+            
+            const message = isExisting 
+                ? `已将 ${dishName} 数量+${quantity}` 
+                : `已添加 ${dishName} ×${quantity} 到购物车`;
+            
+            const text = document.createTextNode(message);
+            toast.appendChild(text);
+            
+            // 添加到文档并设置自动移除
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
+            }, 2300);
+        },
+
+        // 购物车图标抖动动画
+        animateCartIcon() {
+            // 获取购物车图标元素
+            const cartNavItem = document.querySelector('.nav-item[class*="cart"]');
+            if (cartNavItem) {
+                const cartIcon = cartNavItem.querySelector('.nav-icon');
+                const cartBadge = cartNavItem.querySelector('.cart-badge');
+                
+                // 添加抖动动画
+                if (cartIcon) {
+                    cartIcon.classList.remove('cart-shake');
+                    // 触发重绘
+                    void cartIcon.offsetWidth;
+                    cartIcon.classList.add('cart-shake');
+                }
+                
+                // 添加徽章动画
+                if (cartBadge) {
+                    cartBadge.classList.remove('badge-pulse');
+                    // 触发重绘
+                    void cartBadge.offsetWidth;
+                    cartBadge.classList.add('badge-pulse');
+                }
+            }
+        },
         // 更新购物车商品数量
         updateCartQuantity(index, quantity) {
             if (quantity < 1) quantity = 1;
@@ -178,21 +317,41 @@ new Vue({
         
         // 保存购物车到本地存储
         saveCart() {
-            localStorage.setItem('cart', JSON.stringify(this.cartItems));
-            console.log("购物车已保存到本地存储, 项目数:", this.cartItems.length);
+            try {
+                // 确保每个购物车项的数量都是数字类型
+                const validatedCart = this.cartItems.map(item => ({
+                    ...item,
+                    quantity: parseInt(item.quantity) || 1 // 确保数量是有效的整数
+                }));
+                
+                localStorage.setItem('cart', JSON.stringify(validatedCart));
+                console.log("购物车已保存到本地存储, 项目数:", validatedCart.length);
+            } catch (e) {
+                console.error('保存购物车数据失败:', e);
+            }
         },
         
         // 从本地存储加载购物车
         loadCart() {
-            const savedCart = localStorage.getItem('cart');
-            if (savedCart) {
-                try {
-                    this.cartItems = JSON.parse(savedCart);
+            try {
+                const savedCart = localStorage.getItem('cart');
+                if (savedCart) {
+                    const parsedCart = JSON.parse(savedCart);
+                    
+                    // 验证和修复购物车数据
+                    this.cartItems = parsedCart.map(item => ({
+                        ...item,
+                        quantity: parseInt(item.quantity) || 1, // 确保数量是有效的整数
+                        price: parseFloat(item.price) || 0 // 确保价格是有效的数字
+                    }));
+                    
                     console.log("从本地存储加载购物车, 项目数:", this.cartItems.length);
-                } catch (e) {
-                    console.error('加载购物车数据失败:', e);
+                } else {
                     this.cartItems = [];
                 }
+            } catch (e) {
+                console.error('加载购物车数据失败:', e);
+                this.cartItems = [];
             }
         },
         
@@ -215,7 +374,6 @@ new Vue({
         // 获取所有订单
         fetchOrders() {
             console.log("获取订单列表");
-            this.loading = true;
             
             axios.get('/api/orders/')
                 .then(response => {
@@ -225,29 +383,32 @@ new Vue({
                 .catch(error => {
                     console.error('获取订单失败:', error);
                     this.showNotification('获取订单失败，请稍后再试', 'error');
-                })
-                .finally(() => {
-                    this.loading = false;
                 });
         },
         
         // 查看订单详情
         viewOrder(orderId) {
             console.log("查看订单详情:", orderId);
-            this.loading = true;
             
             axios.get(`/api/orders/${orderId}`)
                 .then(response => {
                     this.selectedOrder = response.data;
                     this.activeTab = 'order-detail';
+                    
+                    // 滚动到顶部
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 })
                 .catch(error => {
                     console.error('获取订单详情失败:', error);
                     this.showNotification('获取订单详情失败，请稍后再试', 'error');
-                })
-                .finally(() => {
-                    this.loading = false;
                 });
+        },
+        
+        // 刷新订单详情（在评价删除后）
+        refreshOrderDetail() {
+            if (this.selectedOrder) {
+                this.viewOrder(this.selectedOrder.id);
+            }
         },
         
         // 添加菜品
@@ -276,8 +437,9 @@ new Vue({
             // 显示成功通知
             this.showNotification('评价提交成功', 'success');
             
-            // 返回订单详情页
+            // 返回订单详情页并刷新数据
             this.activeTab = 'order-detail';
+            this.refreshOrderDetail();
         },
         
         // 显示通知
@@ -299,6 +461,17 @@ new Vue({
             this.notificationTimer = setTimeout(() => {
                 this.notification.show = false;
             }, 3000);
+        },
+        
+        // 获取通知图标
+        getNotificationIcon(type) {
+            const iconMap = {
+                'success': 'bi-check-circle-fill',
+                'error': 'bi-exclamation-circle-fill',
+                'warning': 'bi-exclamation-triangle-fill',
+                'info': 'bi-info-circle-fill'
+            };
+            return iconMap[type] || 'bi-bell-fill';
         }
     }
 });

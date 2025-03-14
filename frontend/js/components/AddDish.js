@@ -19,9 +19,6 @@ Vue.component('add-dish', {
                 preview: null,
                 data: null
             },
-            cameraActive: false,
-            stream: null,
-            videoElement: null,
             submitting: false,
             error: ''
         };
@@ -86,8 +83,13 @@ Vue.component('add-dish', {
                                 </button>
                             </div>
 
-                            <!-- 使用iOS相机组件 -->
-                            <ios-camera v-model="image.data" @photo-taken="onPhotoTaken"></ios-camera>
+                            <!-- 图片上传按钮 -->
+                            <div>
+                                <label class="btn btn-outline-primary">
+                                    <i class="bi bi-image"></i> 从相册选择图片
+                                    <input type="file" class="d-none" accept="image/*" @change="onFileSelected">
+                                </label>
+                            </div>
                         </div>
                         
                         <!-- 错误提示 -->
@@ -117,10 +119,26 @@ Vue.component('add-dish', {
         goBack() {
             this.$emit('back');
         },
-        onPhotoTaken(photoData) {
-            // 处理iOS相机拍摄的照片
-            this.image.preview = photoData;
-            this.image.data = photoData;
+        onFileSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // 验证文件类型
+            if (!file.type.match('image.*')) {
+                this.error = '请选择图片文件';
+                return;
+            }
+            
+            // 读取文件为DataURL
+            const reader = new FileReader();
+            reader.onload = e => {
+                this.image.data = e.target.result;
+                this.image.preview = e.target.result;
+            };
+            reader.onerror = () => {
+                this.error = '读取图片失败';
+            };
+            reader.readAsDataURL(file);
         },
         clearImage() {
             this.image.preview = null;

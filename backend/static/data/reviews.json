@@ -70,5 +70,79 @@
         "image_paths": [],
         "timestamp": "2025-03-15T01:01:33.269393",
         "user_name": "匿名用户"
+    },
+    {
+        "id": "add296e6-6747-4025-aff2-3b6c6c35a9c7",
+        "dish_id": "e4b7f6a8-c23d-4e7a-b8f9-1c5d6a7e8b9c",
+        "rating": 5,
+        "comment": "不错，很棒",
+        "image_paths": [
+            "/static/images/reviews/b6e43ec6-277d-404c-a62a-40ea19d9a86d.jpg"
+        ],
+        "timestamp": "2025-03-15T02:08:35.519523",
+        "user_name": "匿名用户"
+    },
+    {
+        "id": "82019e39-1e9d-4799-a9f2-548ef37c2250",
+        "dish_id": "b2c3d4e5-f6a7-b8c9-d0e1-f2a3b4c5d6e7",
+        "rating": 5,
+        "comment": "脆爽",
+        "image_paths": [],
+        "timestamp": "2025-03-15T02:21:50.911642",
+        "user_name": "匿名用户"
+    },
+    {
+        "id": "d42a84ef-6b5f-4276-9957-32aaaf04d265",
+        "dish_id": "c3d4e5f6-a7b8-c9d0-e1f2-a3b4c5d6e7f8",
+        "rating": 5,
+        "comment": "肥而不腻",
+        "image_paths": [],
+        "timestamp": "2025-03-15T02:22:01.443189",
+        "user_name": "匿名用户"
+    },
+    {
+        "id": "ff4e149d-f9ad-4bfe-9ab1-4bbe4f0000cb",
+        "dish_id": "e5f6a7b8-c9d0-e1f2-a3b4-c5d6e7f8a9b0",
+        "rating": 5,
+        "comment": "开吃",
+        "image_paths": [],
+        "timestamp": "2025-03-15T02:22:09.336304",
+        "user_name": "匿名用户"
+    },
+    {
+        "id": "4fb03776-c9ec-4cf4-b3d9-226d5156088e",
+        "dish_id": "f6a7b8c9-d0e1-f2a3-b4c5-d6e7f8a9b0c1",
+        "rating": 5,
+        "comment": "好喝",
+        "image_paths": [],
+        "timestamp": "2025-03-15T02:22:35.492465",
+        "user_name": "匿名用户"
+    },
+    {
+        "id": "f267068a-c59e-45bd-b476-5a6fa86011fa",
+        "dish_id": "a7b8c9d0-e1f2-a3b4-c5d6-e7f8a9b0c1d2",
+        "rating": 5,
+        "comment": "好喝",
+        "image_paths": [],
+        "timestamp": "2025-03-15T02:22:42.743586",
+        "user_name": "匿名用户"
+    },
+    {
+        "id": "4d4bf6bc-a76e-4a4e-a008-6b8684e7b5d4",
+        "dish_id": "c9d0e1f2-a3b4-c5d6-e7f8-a9b0c1d2e3f4",
+        "rating": 5,
+        "comment": "nice",
+        "image_paths": [],
+        "timestamp": "2025-03-15T02:22:54.051353",
+        "user_name": "匿名用户"
+    },
+    {
+        "id": "46ae02f8-f649-4232-b447-1b929e94b96a",
+        "dish_id": "d4e5f6a7-b8c9-d0e1-f2a3-b4c5d6e7f8a9",
+        "rating": 5,
+        "comment": "不错",
+        "image_paths": [],
+        "timestamp": "2025-03-15T02:54:36.437547",
+        "user_name": "匿名用户"
     }
 ]

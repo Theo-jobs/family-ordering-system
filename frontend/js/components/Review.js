@@ -11,11 +11,9 @@ Vue.component('review-component', {
             comment: '',
             images: [],
             imagePreview: [],
-            stream: null,
-            videoElement: null,
-            cameraActive: false,
             submitting: false,
-            error: ''
+            error: '',
+            previewImage: null
         };
     },
     template: `
@@ -25,46 +23,54 @@ Vue.component('review-component', {
                 <i class="bi bi-arrow-left"></i>
             </div>
             
-            <h2 class="mb-3">评价菜品</h2>
-            
             <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">评价菜品</h3>
+                </div>
                 <div class="card-body">
                     <!-- 菜品信息 -->
-                    <div class="d-flex mb-4">
-                        <img :src="dish.image_path" class="cart-item-img me-3" :alt="dish.name">
+                    <div class="d-flex align-items-center mb-4">
+                        <img :src="dish.image_path" class="cart-item-img me-3" :alt="dish.name" @error="handleImageError">
                         <div>
-                            <h4>{{ dish.name }}</h4>
+                            <h4 class="mb-1">{{ dish.name }}</h4>
                             <div class="text-muted">¥{{ dish.price.toFixed(2) }}</div>
                         </div>
                     </div>
                     
                     <form @submit.prevent="saveReview">
                         <!-- 评分 -->
-                        <div class="mb-3">
-                            <label class="form-label">评分</label>
-                            <div class="rating-input">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">您的评分</label>
+                            <div class="rating-stars mb-2">
                                 <i v-for="n in 5" :key="n" class="bi" 
                                    :class="n <= rating ? 'bi-star-fill' : 'bi-star'" 
                                    style="font-size: 2rem; color: #ffc107; cursor: pointer;"
                                    @click="rating = n"></i>
                             </div>
+                            <div class="text-muted small">点击星星进行评分</div>
                         </div>
                         
                         <!-- 评价内容 -->
-                        <div class="mb-3">
-                            <label class="form-label">评价内容</label>
-                            <textarea class="form-control" v-model="comment" rows="3" placeholder="请分享您对这道菜的看法..."></textarea>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">评价内容</label>
+                            <textarea 
+                                class="form-control" 
+                                v-model="comment" 
+                                rows="4" 
+                                placeholder="请分享您对这道菜的看法..."
+                                required></textarea>
                         </div>
                         
                         <!-- 上传图片 -->
-                        <div class="mb-3">
-                            <label class="form-label">上传图片(可选)</label>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">上传图片 (可选)</label>
                             
                             <!-- 图片预览 -->
                             <div v-if="imagePreview.length > 0" class="image-preview-container mb-3">
                                 <div class="d-flex flex-wrap gap-2">
                                     <div v-for="(img, index) in imagePreview" :key="index" class="position-relative">
-                                        <img :src="img" class="review-image" alt="评价图片">
+                                        <img :src="img" class="review-image" alt="评价图片"
+                                             @click="previewImage = img">
                                         <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" 
                                                 @click="removeImage(index)">
                                             <i class="bi bi-x"></i>
@@ -73,25 +79,10 @@ Vue.component('review-component', {
                                 </div>
                             </div>
                             
-                            <!-- 相机预览 -->
-                            <div v-if="cameraActive" class="camera-container mb-3">
-                                <video ref="video" class="camera-preview w-100" autoplay style="height: 300px;"></video>
-                                <div class="camera-controls mt-3">
-                                    <div class="camera-button" @click="takePhoto">
-                                        <div class="camera-inner"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- 相机控制按钮 -->
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-primary" @click="toggleCamera">
-                                    <i class="bi" :class="cameraActive ? 'bi-camera-video-off' : 'bi-camera'"></i>
-                                    {{ cameraActive ? '关闭相机' : '打开相机' }}
-                                </button>
-                                
-                                <label class="btn btn-outline-secondary">
-                                    <i class="bi bi-image"></i> 从相册选择
+                            <!-- 图片上传按钮 -->
+                            <div>
+                                <label class="btn btn-outline-primary">
+                                    <i class="bi bi-image me-1"></i> 从相册选择
                                     <input type="file" class="d-none" accept="image/*" @change="onFileSelected" multiple>
                                 </label>
                             </div>
@@ -104,94 +95,37 @@ Vue.component('review-component', {
                         
                         <!-- 提交按钮 -->
                         <div class="d-flex gap-2 mt-4">
-                            <button type="button" class="btn btn-outline-secondary flex-grow-1" @click="goBack">取消</button>
-                            <button type="submit" class="btn btn-primary flex-grow-1" :disabled="submitting">
+                            <button type="button" class="btn btn-outline-secondary flex-grow-1" @click="goBack">
+                                <i class="bi bi-x-circle me-1"></i> 取消
+                            </button>
+                            <button type="submit" class="btn btn-primary flex-grow-1" :disabled="submitting || !comment.trim()">
                                 <span v-if="submitting">
                                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                     提交中...
                                 </span>
                                 <span v-else>
-                                    <i class="bi bi-check-circle"></i> 提交评价
+                                    <i class="bi bi-check-circle me-1"></i> 提交评价
                                 </span>
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
+            
+            <!-- 图片预览弹窗 -->
+            <div v-if="previewImage" class="image-viewer" @click="previewImage = null">
+                <div class="image-viewer-content">
+                    <img :src="previewImage" class="full-image">
+                    <div class="mt-3 text-white text-center">
+                        <p>点击任意位置关闭</p>
+                    </div>
+                </div>
+            </div>
         </div>
     `,
     methods: {
         goBack() {
-            // 关闭相机
-            this.stopCamera();
             this.$emit('back');
-        },
-        toggleCamera() {
-            if (this.cameraActive) {
-                this.stopCamera();
-            } else {
-                this.startCamera();
-            }
-        },
-        startCamera() {
-            // 检查浏览器支持
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                this.error = '您的浏览器不支持访问相机，请使用更现代的浏览器或从相册选择图片';
-                return;
-            }
-            
-            // 关闭任何现有的相机流
-            this.stopCamera();
-            
-            // 获取视频元素
-            this.videoElement = this.$refs.video;
-            
-            // 请求相机权限
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    this.stream = stream;
-                    this.videoElement.srcObject = stream;
-                    this.cameraActive = true;
-                })
-                .catch(err => {
-                    console.error('相机访问错误:', err);
-                    this.error = '无法访问相机: ' + err.message;
-                });
-        },
-        stopCamera() {
-            if (this.stream) {
-                this.stream.getTracks().forEach(track => {
-                    track.stop();
-                });
-                this.stream = null;
-            }
-            
-            if (this.videoElement) {
-                this.videoElement.srcObject = null;
-            }
-            
-            this.cameraActive = false;
-        },
-        takePhoto() {
-            if (!this.videoElement || !this.cameraActive) return;
-            
-            // 创建canvas元素以捕获视频帧
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            
-            // 设置canvas尺寸与视频相同
-            canvas.width = this.videoElement.videoWidth;
-            canvas.height = this.videoElement.videoHeight;
-            
-            // 将视频帧绘制到canvas
-            context.drawImage(this.videoElement, 0, 0, canvas.width, canvas.height);
-            
-            // 将canvas转换为base64图片数据
-            const imageData = canvas.toDataURL('image/jpeg');
-            
-            // 添加到图片列表
-            this.images.push(imageData);
-            this.imagePreview.push(imageData);
         },
         onFileSelected(event) {
             const files = event.target.files;
@@ -205,6 +139,12 @@ Vue.component('review-component', {
                     return;
                 }
                 
+                // 验证文件大小（限制为5MB）
+                if (file.size > 5 * 1024 * 1024) {
+                    this.error = '图片大小不能超过5MB';
+                    return;
+                }
+                
                 // 读取文件为DataURL
                 const reader = new FileReader();
                 reader.onload = e => {
@@ -214,10 +154,17 @@ Vue.component('review-component', {
                 };
                 reader.readAsDataURL(file);
             });
+            
+            // 清除输入，允许重复选择同一文件
+            event.target.value = '';
         },
         removeImage(index) {
             this.images.splice(index, 1);
             this.imagePreview.splice(index, 1);
+        },
+        handleImageError(event) {
+            // 菜品图片加载失败时使用备用图片
+            event.target.src = `/static/images/dishes/default-${this.dish.category || 'hot'}.jpg`;
         },
         saveReview() {
             // 验证评价内容
@@ -240,10 +187,7 @@ Vue.component('review-component', {
             // 发送添加评价请求
             axios.post('/api/reviews/', reviewData)
                 .then(response => {
-                    // 提示成功
-                    this.$root.showNotification('评价提交成功', 'success');
-                    
-                    // 返回订单详情页面
+                    // 提示成功并返回
                     this.$emit('save-review', response.data);
                 })
                 .catch(error => {
@@ -254,9 +198,5 @@ Vue.component('review-component', {
                     this.submitting = false;
                 });
         }
-    },
-    beforeDestroy() {
-        // 确保在组件销毁前关闭相机
-        this.stopCamera();
     }
 });

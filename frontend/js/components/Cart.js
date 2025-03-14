@@ -8,7 +8,8 @@ Vue.component('cart-component', {
     data() {
         return {
             note: '',
-            submitting: false
+            submitting: false,
+            collapseNote: true
         };
     },
     computed: {
@@ -19,17 +20,25 @@ Vue.component('cart-component', {
         },
         isEmpty() {
             return this.cartItems.length === 0;
+        },
+        totalItems() {
+            return this.cartItems.reduce((count, item) => count + item.quantity, 0);
         }
     },
     template: `
         <div class="cart">
-            <h2 class="mb-3">购物车</h2>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">购物车</h2>
+                <span v-if="!isEmpty" class="badge bg-primary rounded-pill">{{ totalItems }}件商品</span>
+            </div>
             
             <!-- 空购物车提示 -->
-            <div v-if="isEmpty" class="text-center my-5">
-                <i class="bi bi-cart text-muted" style="font-size: 3rem;"></i>
-                <p class="mt-3">购物车是空的</p>
-                <button class="btn btn-outline-primary mt-2" @click="goToMenu">去点餐</button>
+            <div v-if="isEmpty" class="text-center my-5 py-5">
+                <i class="bi bi-cart text-muted" style="font-size: 3.5rem;"></i>
+                <p class="mt-3 text-muted">购物车是空的</p>
+                <button class="btn btn-primary mt-3" @click="goToMenu">
+                    <i class="bi bi-grid me-1"></i>去点餐
+                </button>
             </div>
             
             <!-- 购物车内容 -->
@@ -38,19 +47,34 @@ Vue.component('cart-component', {
                 <div class="card mb-3">
                     <div class="list-group list-group-flush">
                         <div v-for="(item, index) in cartItems" :key="index" class="list-group-item cart-item">
-                            <img :src="item.image_path" class="cart-item-img" :alt="item.dish_name">
-                            <div class="cart-item-info">
-                                <h5 class="mb-1">{{ item.dish_name }}</h5>
-                                <div class="cart-item-price mb-2">¥{{ item.price.toFixed(2) }}</div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="quantity-control">
-                                        <div class="quantity-btn" @click="decreaseQuantity(index)">-</div>
-                                        <input type="number" class="quantity-input" v-model.number="item.quantity" min="1" @change="updateQuantity(index, item.quantity)">
-                                        <div class="quantity-btn" @click="increaseQuantity(index)">+</div>
+                            <div class="d-flex">
+                                <img :src="item.image_path" class="cart-item-img" :alt="item.dish_name" @error="handleImageError($event, item)">
+                                <div class="cart-item-info w-100">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h5 class="mb-0">{{ item.dish_name }}</h5>
+                                        <button class="btn btn-sm p-0 cart-remove-btn" @click="confirmRemoveItem(index)">
+                                            <i class="bi bi-x-circle text-danger"></i>
+                                        </button>
                                     </div>
-                                    <button class="btn btn-outline-danger btn-sm" @click="removeItem(index)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
+                                    
+                                    <div class="text-muted small mb-2">
+                                        单价: ¥{{ item.price.toFixed(2) }}
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <div class="quantity-control">
+                                            <div class="quantity-btn" @click="decreaseQuantity(index)">
+                                                <i class="bi bi-dash"></i>
+                                            </div>
+                                            <input type="number" class="quantity-input" v-model.number="item.quantity" min="1" @change="updateQuantity(index, item.quantity)">
+                                            <div class="quantity-btn" @click="increaseQuantity(index)">
+                                                <i class="bi bi-plus"></i>
+                                            </div>
+                                        </div>
+                                        <div class="cart-item-price">
+                                            ¥{{ (item.price * item.quantity).toFixed(2) }}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -59,8 +83,15 @@ Vue.component('cart-component', {
                 
                 <!-- 订单备注 -->
                 <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">订单备注</h5>
+                    <div class="card-header d-flex justify-content-between align-items-center" 
+                         @click="collapseNote = !collapseNote" 
+                         style="cursor: pointer;">
+                        <h5 class="mb-0">
+                            <i class="bi bi-pencil-square me-2"></i>订单备注
+                        </h5>
+                        <i class="bi" :class="collapseNote ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
+                    </div>
+                    <div class="card-body" v-if="!collapseNote">
                         <textarea 
                             class="form-control" 
                             v-model="note" 
@@ -69,25 +100,34 @@ Vue.component('cart-component', {
                     </div>
                 </div>
                 
-                <!-- 总价与结算按钮 -->
-                <div class="card">
+                <!-- 订单总结与结算按钮 -->
+                <div class="card mb-3">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span>总价:</span>
+                            <span class="text-muted">商品总计</span>
+                            <span>¥{{ totalPrice.toFixed(2) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">配送费</span>
+                            <span>免费</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-bold">总计:</span>
                             <span class="fs-4 fw-bold text-danger">¥{{ totalPrice.toFixed(2) }}</span>
                         </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-outline-secondary flex-grow-1" @click="clearCart">
-                                清空购物车
-                            </button>
-                            <button class="btn btn-primary flex-grow-1" :disabled="submitting" @click="checkout">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" :disabled="submitting" @click="checkout">
                                 <span v-if="submitting">
                                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                     提交中...
                                 </span>
                                 <span v-else>
-                                    <i class="bi bi-clipboard-check"></i> 去下单
+                                    <i class="bi bi-clipboard-check me-1"></i> 去结算
                                 </span>
+                            </button>
+                            <button class="btn btn-outline-secondary" @click="clearCart">
+                                <i class="bi bi-trash me-1"></i> 清空购物车
                             </button>
                         </div>
                     </div>
@@ -122,6 +162,28 @@ Vue.component('cart-component', {
                 this.$emit('clear-cart');
             }
         },
+        handleImageError(event, item) {
+            // 图片加载失败时使用备用图片
+            const categoryFromPath = item.image_path.includes('dishes/default-') 
+                ? item.image_path.split('default-')[1].split('.')[0]
+                : 'hot';
+            event.target.src = `/static/images/dishes/default-${categoryFromPath}.jpg`;
+        },
+        
+        confirmRemoveItem(index) {
+            // 使用轻量级确认而非标准confirm
+            if (window.confirm(`确定要从购物车移除 ${this.cartItems[index].dish_name} 吗？`)) {
+                this.removeItem(index);
+            }
+        },
+        
+        removeItem(index) {
+            const removedItem = this.cartItems[index];
+            this.$emit('remove-item', index);
+            
+            // 显示移除成功的提示
+            this.$root.showNotification(`已从购物车移除 ${removedItem.dish_name}`, 'info');
+        },
         checkout() {
             this.submitting = true;
             
@@ -143,7 +205,7 @@ Vue.component('cart-component', {
                 })
                 .catch(error => {
                     console.error('下单失败:', error);
-                    alert('下单失败，请稍后再试');
+                    this.$root.showNotification('下单失败，请稍后再试', 'error');
                 })
                 .finally(() => {
                     this.submitting = false;

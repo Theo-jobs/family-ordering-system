@@ -18,7 +18,7 @@ Vue.component('nav-bar', {
             <div class="nav-item" :class="{ active: activeTab === 'cart' }" @click="changeTab('cart')" style="position: relative;">
                 <i class="bi bi-cart nav-icon"></i>
                 <span class="nav-text">购物车</span>
-                <span v-if="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
+                <span v-if="cartCount > 0" class="cart-badge">{{ cartCount > 99 ? '99+' : cartCount }}</span>
             </div>
             <div class="nav-item" :class="{ active: activeTab === 'orders' || activeTab === 'order-detail' }" @click="changeTab('orders')">
                 <i class="bi bi-receipt nav-icon"></i>
