@@ -15,6 +15,15 @@ Vue.component('dish-detail', {
             showQrCodeFullscreen: false
         };
     },
+    created() {
+        // 检查购物车中是否已有该菜品
+        const cartItem = this.$root.cartItems.find(item => item.dish_id === this.dish.id);
+        
+        // 如果购物车中已有此菜品，则使用购物车中的数量
+        if (cartItem) {
+            this.quantity = cartItem.quantity;
+        }
+    },
     computed: {
         // 使用静态收款码图片
         qrCodeUrl() {
@@ -291,9 +300,23 @@ Vue.component('dish-detail', {
                 dish_id: this.dish.id,
                 dish_name: this.dish.name,
                 price: this.dish.price,
-                quantity: this.quantity, // 传递用户选择的数量
+                quantity: this.quantity, // 使用用户选择的数量
                 image_path: this.dish.image_path
             };
+            
+            // 判断购物车中是否已有该菜品
+            const existingItem = this.$root.cartItems.find(item => item.dish_id === this.dish.id);
+            
+            if (existingItem) {
+                // 如果已存在，提供选项让用户选择替换还是累加
+                if (confirm(`"${this.dish.name}"已在购物车中(${existingItem.quantity}件)，是否替换数量？\n点击"确定"替换为${this.quantity}件\n点击"取消"则累加数量`)) {
+                    // 用户选择替换
+                    cartItem.replace = true; // 添加标记告诉父组件替换而不是累加
+                } else {
+                    // 用户选择累加
+                    // 不做额外处理，默认是累加
+                }
+            }
             
             this.$emit('add-to-cart', cartItem);
         },

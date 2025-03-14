@@ -16,7 +16,8 @@ Vue.component('menu-component', {
             error: null,
             searchQuery: '',
             transitionName: 'fade',
-            previousCategory: null
+            previousCategory: null,
+            itemQuantities: {} // 存储每个菜品的数量
         };
     },
     computed: {
@@ -28,7 +29,7 @@ Vue.component('menu-component', {
             const query = this.searchQuery.toLowerCase();
             return this.dishes.filter(dish => 
                 dish.name.toLowerCase().includes(query) || 
-                dish.description.toLowerCase().includes(query)
+                (dish.description && dish.description.toLowerCase().includes(query))
             );
         },
         hasResults() {
@@ -165,12 +166,26 @@ Vue.component('menu-component', {
                                         <i class="bi bi-chat-quote me-1 text-muted"></i> 
                                         <span class="text-truncate d-inline-block" style="max-width: 100%;">{{ dish.latest_review }}</span>
                                     </div>
-                                    <button 
-                                        class="btn btn-sm btn-primary w-100 btn-add-to-cart" 
-                                        @click.stop="addToCart(dish)" 
-                                        :id="'add-cart-btn-'+dish.id">
-                                        <i class="bi bi-cart-plus me-1"></i> 加入购物车
-                                    </button>
+                                    
+                                    <!-- 购物车数量控制 - 已简化只保留数量控制 -->
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <div class="quantity-control">
+                                                <div class="quantity-btn" @click.stop="decreaseQuantity(dish.id)">
+                                                    <i class="bi bi-dash"></i>
+                                                </div>
+                                                <input type="number" class="quantity-input" :value="getItemQuantity(dish.id)" min="0" 
+                                                    @change.stop="updateQuantity(dish.id, $event.target.value)"
+                                                    @click.stop>
+                                                <div class="quantity-btn" @click.stop="increaseQuantity(dish.id)">
+                                                    <i class="bi bi-plus"></i>
+                                                </div>
+                                            </div>
+                                            <div class="text-primary fw-bold">
+                                                ¥{{ (dish.price * getItemQuantity(dish.id)).toFixed(2) }}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -188,22 +203,113 @@ Vue.component('menu-component', {
         viewDish(dishId) {
             this.$emit('view-dish', dishId);
         },
-        addToCart(dish) {
-            // 添加按钮动画
-            const button = document.getElementById('add-cart-btn-'+dish.id);
-            if (button) {
-                button.classList.add('add-to-cart-animation');
-                setTimeout(() => {
-                    button.classList.remove('add-to-cart-animation');
-                }, 500);
+        getItemQuantity(dishId) {
+            // 检查购物车中是否已有该菜品
+            const cartItem = this.$root.cartItems.find(item => item.dish_id === dishId);
+            
+            // 如果购物车中已有该菜品，使用购物车中的数量
+            if (cartItem) {
+                // 确保itemQuantities中有该菜品的数量记录
+                if (!this.itemQuantities[dishId]) {
+                    this.$set(this.itemQuantities, dishId, cartItem.quantity);
+                }
+                return this.itemQuantities[dishId];
             }
             
-            // 默认添加1份
-            const itemToAdd = {
-                ...dish,
-                quantity: 1
+            // 如果购物车中没有该菜品，且本地没有数量记录，则设置为0
+            if (!this.itemQuantities[dishId]) {
+                this.$set(this.itemQuantities, dishId, 0);
+            }
+            
+            return this.itemQuantities[dishId];
+        },
+        decreaseQuantity(dishId) {
+            if (this.itemQuantities[dishId] > 0) {
+                this.itemQuantities[dishId]--;
+                
+                // 找到当前菜品
+                const dish = this.dishes.find(d => d.id === dishId);
+                if (dish) {
+                    // 直接更新购物车
+                    this.updateCartDirectly(dish, this.itemQuantities[dishId]);
+                }
+            }
+        },
+        increaseQuantity(dishId) {
+            if (!this.itemQuantities[dishId]) {
+                this.$set(this.itemQuantities, dishId, 1);
+            } else {
+                this.itemQuantities[dishId]++;
+            }
+            
+            // 找到当前菜品
+            const dish = this.dishes.find(d => d.id === dishId);
+            if (dish) {
+                // 直接更新购物车
+                this.updateCartDirectly(dish, this.itemQuantities[dishId]);
+            }
+        },
+        updateQuantity(dishId, value) {
+            const quantity = parseInt(value);
+            if (isNaN(quantity) || quantity < 0) {
+                this.$set(this.itemQuantities, dishId, 0);
+            } else {
+                this.$set(this.itemQuantities, dishId, quantity);
+            }
+            
+            // 找到当前菜品
+            const dish = this.dishes.find(d => d.id === dishId);
+            if (dish) {
+                // 直接更新购物车
+                this.updateCartDirectly(dish, this.itemQuantities[dishId]);
+            }
+        },
+        updateCartDirectly(dish, quantity) {
+            // 创建购物车项对象
+            const cartItem = {
+                dish_id: dish.id,
+                dish_name: dish.name,
+                price: dish.price,
+                quantity: quantity,
+                image_path: dish.image_path,
+                // 添加替换标记，表示我们要替换而不是累加
+                replace: true
             };
-            this.$emit('add-to-cart', itemToAdd);
+            
+            // 如果数量为0，并且商品已在购物车，则应该移除
+            if (quantity === 0) {
+                cartItem.remove = true;
+            }
+            
+            // 触发购物车图标抖动动画
+            this.triggerCartAnimation();
+            
+            // 调用父组件的方法更新购物车
+            this.$emit('add-to-cart', cartItem);
+        },
+        triggerCartAnimation() {
+            // 获取购物车图标元素（通过$root实例访问DOM）
+            const cartNavItem = document.querySelector('.nav-item[class*="cart"]');
+            if (cartNavItem) {
+                const cartIcon = cartNavItem.querySelector('.nav-icon');
+                const cartBadge = cartNavItem.querySelector('.cart-badge');
+                
+                // 添加抖动动画
+                if (cartIcon) {
+                    cartIcon.classList.remove('cart-shake');
+                    // 触发重绘
+                    void cartIcon.offsetWidth;
+                    cartIcon.classList.add('cart-shake');
+                }
+                
+                // 添加徽章动画
+                if (cartBadge) {
+                    cartBadge.classList.remove('badge-pulse');
+                    // 触发重绘
+                    void cartBadge.offsetWidth;
+                    cartBadge.classList.add('badge-pulse');
+                }
+            }
         },
         goToAddDish() {
             this.$emit('change-tab', 'add-dish');

@@ -43,7 +43,11 @@ new Vue({
     computed: {
         // 计算购物车总商品数（考虑数量）
         cartTotalItems() {
-            return this.cartItems.reduce((total, item) => total + item.quantity, 0);
+            return this.cartItems.reduce((total, item) => {
+                // 确保数量是数字类型
+                const quantity = parseInt(item.quantity) || 0;
+                return total + quantity;
+            }, 0);
         }
     },
     created() {
@@ -179,26 +183,50 @@ new Vue({
             }
         },
         
-        // 改进的添加到购物车方法 (app.js)
-        // 修复后的添加到购物车方法 (app.js)
+        // 添加到购物车方法 (app.js)
         addToCart(item) {
             console.log("添加到购物车:", item);
             // 确保菜品ID取到正确的值
             const dishId = item.id || item.dish_id;
             
             // 确保数量是数字类型
-            const quantity = parseInt(item.quantity) || 1;
+            const quantity = parseInt(item.quantity) || 0;
+            
+            // 检查是否应该从购物车移除（数量为0）
+            if (item.remove === true || quantity === 0) {
+                // 查找此菜品在购物车中的索引
+                const indexToRemove = this.cartItems.findIndex(cartItem => cartItem.dish_id === dishId);
+                if (indexToRemove !== -1) {
+                    // 从购物车移除
+                    this.cartItems.splice(indexToRemove, 1);
+                    console.log(`从购物车移除菜品: ${item.dish_name || item.name}`);
+                    
+                    // 保存购物车数据
+                    this.saveCart();
+                    
+                    // 显示移除提示
+                    this.showAddToCartToast(item.name || item.dish_name, 0, true, false, true);
+                    
+                    return;
+                }
+            }
             
             // 检查购物车中是否已有该菜品
             const existingIndex = this.cartItems.findIndex(cartItem => cartItem.dish_id === dishId);
             const isExisting = existingIndex !== -1;
             
             if (isExisting) {
-                // 如果已存在，增加数量
-                this.cartItems[existingIndex].quantity += quantity;
-                console.log("增加现有购物车项数量:", this.cartItems[existingIndex]);
-            } else {
-                // 否则添加新项目
+                // 如果item有replace标记，则替换购物车项目数量
+                if (item.replace === true) {
+                    this.cartItems[existingIndex].quantity = quantity;
+                    console.log("替换购物车项数量:", this.cartItems[existingIndex]);
+                } else {
+                    // 否则累加数量
+                    this.cartItems[existingIndex].quantity += quantity;
+                    console.log("增加现有购物车项数量:", this.cartItems[existingIndex]);
+                }
+            } else if (quantity > 0) { // 只有数量大于0时才添加新项目
+                // 添加新项目
                 const newItem = {
                     dish_id: dishId,
                     dish_name: item.name || item.dish_name,
@@ -215,7 +243,7 @@ new Vue({
             this.saveCart();
             
             // 显示自定义添加成功提示
-            this.showAddToCartToast(item.name || item.dish_name, quantity, isExisting);
+            this.showAddToCartToast(item.name || item.dish_name, quantity, isExisting, item.replace);
             
             // 触发购物车图标抖动动画
             this.animateCartIcon();
@@ -228,20 +256,17 @@ new Vue({
             }
         },
 
-        // 计算购物车总数量的方法（修复版）
-        cartTotalItems() {
-            return this.cartItems.reduce((total, item) => {
-                // 确保数量是数字类型
-                const quantity = parseInt(item.quantity) || 0;
-                return total + quantity;
-            }, 0);
-        },
         // 显示添加到购物车的提示
-        showAddToCartToast(dishName, quantity, isExisting) {
+        showAddToCartToast(dishName, quantity, isExisting, isReplace, isRemove = false) {
             // 移除任何现有的提示
             const existingToast = document.querySelector('.add-to-cart-toast');
             if (existingToast) {
                 document.body.removeChild(existingToast);
+            }
+            
+            // 如果用户只是设置数量为0，不显示提示
+            if (quantity === 0 && !isRemove) {
+                return;
             }
             
             // 创建提示元素
@@ -250,14 +275,26 @@ new Vue({
             
             // 设置提示内容
             const icon = document.createElement('i');
-            icon.className = 'bi bi-check-circle';
+            
+            let message;
+            if (isRemove) {
+                icon.className = 'bi bi-cart-dash';
+                toast.classList.add('bg-warning');
+                message = `已从购物车移除"${dishName}"`;
+            } else if (isExisting) {
+                icon.className = 'bi bi-check-circle';
+                if (isReplace) {
+                    message = `已将"${dishName}"数量更新为${quantity}`;
+                } else {
+                    message = `已将"${dishName}"数量+${quantity}`;
+                }
+            } else {
+                icon.className = 'bi bi-cart-plus';
+                message = `已添加"${dishName}" ×${quantity}到购物车`;
+            }
+            
             toast.appendChild(icon);
-            
-            const message = isExisting 
-                ? `已将 ${dishName} 数量+${quantity}` 
-                : `已添加 ${dishName} ×${quantity} 到购物车`;
-            
-            const text = document.createTextNode(message);
+            const text = document.createTextNode(' ' + message);
             toast.appendChild(text);
             
             // 添加到文档并设置自动移除
