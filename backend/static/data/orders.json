@@ -1,0 +1,127 @@
+[
+    {
+        "id": "a8b9c0d1-e2f3-a4b5-c6d7-e8f9a0b1c2d3",
+        "items": [
+            {
+                "dish_id": "e4b7f6a8-c23d-4e7a-b8f9-1c5d6a7e8b9c",
+                "dish_name": "红烧肉",
+                "quantity": 1,
+                "price": 48.0,
+                "total": 48.0,
+                "image_path": "/static/images/dishes/default-hongshaorou.jpg"
+            },
+            {
+                "dish_id": "b2c3d4e5-f6a7-b8c9-d0e1-f2a3b4c5d6e7",
+                "dish_name": "凉拌黄瓜",
+                "quantity": 2,
+                "price": 18.0,
+                "total": 36.0,
+                "image_path": "/static/images/dishes/default-liangbanhuanggua.jpg"
+            },
+            {
+                "dish_id": "d4e5f6a7-b8c9-d0e1-f2a3-b4c5d6e7f8a9",
+                "dish_name": "蛋炒饭",
+                "quantity": 3,
+                "price": 22.0,
+                "total": 66.0,
+                "image_path": "/static/images/dishes/default-danchaofan.jpg"
+            }
+        ],
+        "total_price": 150.0,
+        "status": "completed",
+        "timestamp": "2023-07-26T18:30:00",
+        "note": "米饭少放点油"
+    },
+    {
+        "id": "b9c0d1e2-f3a4-b5c6-d7e8-f9a0b1c2d3e4",
+        "items": [
+            {
+                "dish_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+                "dish_name": "宫保鸡丁",
+                "quantity": 1,
+                "price": 38.0,
+                "total": 38.0,
+                "image_path": "/static/images/dishes/default-gongbaojiding.jpg"
+            },
+            {
+                "dish_id": "c3d4e5f6-a7b8-c9d0-e1f2-a3b4c5d6e7f8",
+                "dish_name": "蒜泥白肉",
+                "quantity": 1,
+                "price": 32.0,
+                "total": 32.0,
+                "image_path": "/static/images/dishes/default-suannibarou.jpg"
+            },
+            {
+                "dish_id": "f6a7b8c9-d0e1-f2a3-b4c5-d6e7f8a9b0c1",
+                "dish_name": "柠檬水",
+                "quantity": 2,
+                "price": 12.0,
+                "total": 24.0,
+                "image_path": "/static/images/dishes/default-ningmengshui.jpg"
+            }
+        ],
+        "total_price": 94.0,
+        "status": "completed",
+        "timestamp": "2023-07-27T12:45:00",
+        "note": "宫保鸡丁不要太辣"
+    },
+    {
+        "id": "c0d1e2f3-a4b5-c6d7-e8f9-a0b1c2d3e4f5",
+        "items": [
+            {
+                "dish_id": "b8c9d0e1-f2a3-b4c5-d6e7-f8a9b0c1d2e3",
+                "dish_name": "拿铁咖啡",
+                "quantity": 2,
+                "price": 22.0,
+                "total": 44.0,
+                "image_path": "/static/images/dishes/default-latte.jpg"
+            },
+            {
+                "dish_id": "c9d0e1f2-a3b4-c5d6-e7f8-a9b0c1d2e3f4",
+                "dish_name": "提拉米苏",
+                "quantity": 1,
+                "price": 28.0,
+                "total": 28.0,
+                "image_path": "/static/images/dishes/default-tiramisu.jpg"
+            }
+        ],
+        "total_price": 72.0,
+        "status": "completed",
+        "timestamp": "2023-07-28T15:20:00",
+        "note": "",
+        "updated_at": "2025-03-15T01:00:58.342899"
+    },
+    {
+        "id": "0e6ea9b4-d5c2-441b-bf57-457982fd1522",
+        "items": [
+            {
+                "dish_id": "e4b7f6a8-c23d-4e7a-b8f9-1c5d6a7e8b9c",
+                "dish_name": "红烧肉",
+                "quantity": 1,
+                "price": 48,
+                "total": 48,
+                "image_path": "/static/images/dishes/df2b32d2-da54-450f-9b3e-e4b9bce8b6b5.jpg"
+            },
+            {
+                "dish_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+                "dish_name": "宫保鸡丁",
+                "quantity": 1,
+                "price": 38,
+                "total": 38,
+                "image_path": "/static/images/dishes/566b47f9-95f8-47f7-91b7-280e3cce6842.jpg"
+            },
+            {
+                "dish_id": "d4e5f6a7-b8c9-d0e1-f2a3-b4c5d6e7f8a9",
+                "dish_name": "蛋炒饭",
+                "quantity": 1,
+                "price": 22,
+                "total": 22,
+                "image_path": "/static/images/dishes/114abf84-0a43-47a9-bc45-bc4debe337c8.jpg"
+            }
+        ],
+        "total_price": 108,
+        "status": "pending",
+        "timestamp": "2025-03-15T01:00:44.170911",
+        "note": "要好吃"
+    }
+]

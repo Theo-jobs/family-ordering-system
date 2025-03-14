@@ -1,0 +1,74 @@
+[
+    {
+        "id": "d1e2f3a4-b5c6-d7e8-f9a0-b1c2d3e4f5a6",
+        "dish_id": "e4b7f6a8-c23d-4e7a-b8f9-1c5d6a7e8b9c",
+        "rating": 5,
+        "comment": "红烧肉做得非常好吃，肥而不腻，肉质鲜嫩，味道非常棒！",
+        "image_paths": [],
+        "timestamp": "2023-07-26T19:45:00",
+        "user_name": "张三"
+    },
+    {
+        "id": "e2f3a4b5-c6d7-e8f9-a0b1-c2d3e4f5a6b7",
+        "dish_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+        "rating": 4,
+        "comment": "宫保鸡丁的味道很正宗，但是辣度稍微有点高，下次可以少放点辣椒。",
+        "image_paths": [],
+        "timestamp": "2023-07-27T13:50:00",
+        "user_name": "李四"
+    },
+    {
+        "id": "f3a4b5c6-d7e8-f9a0-b1c2-d3e4f5a6b7c8",
+        "dish_id": "d4e5f6a7-b8c9-d0e1-f2a3-b4c5d6e7f8a9",
+        "rating": 5,
+        "comment": "蛋炒饭真的太好吃了，蛋香浓郁，米饭粒粒分明，很棒！",
+        "image_paths": [],
+        "timestamp": "2023-07-26T20:00:00",
+        "user_name": "王五"
+    },
+    {
+        "id": "a4b5c6d7-e8f9-a0b1-c2d3-e4f5a6b7c8d9",
+        "dish_id": "b2c3d4e5-f6a7-b8c9-d0e1-f2a3b4c5d6e7",
+        "rating": 5,
+        "comment": "凉拌黄瓜非常爽口，调味很好，夏天吃特别舒服。",
+        "image_paths": [],
+        "timestamp": "2023-07-26T19:40:00",
+        "user_name": "赵六"
+    },
+    {
+        "id": "b5c6d7e8-f9a0-b1c2-d3e4-f5a6b7c8d9e0",
+        "dish_id": "c9d0e1f2-a3b4-c5d6-e7f8-a9b0c1d2e3f4",
+        "rating": 5,
+        "comment": "提拉米苏口感细腻，甜度正好，非常好吃！",
+        "image_paths": [],
+        "timestamp": "2023-07-27T16:30:00",
+        "user_name": "钱七"
+    },
+    {
+        "id": "c6d7e8f9-a0b1-c2d3-e4f5-a6b7c8d9e0f1",
+        "dish_id": "b8c9d0e1-f2a3-b4c5-d6e7-f8a9b0c1d2e3",
+        "rating": 4,
+        "comment": "拿铁咖啡口感顺滑，奶香和咖啡香很协调，很好喝。",
+        "image_paths": [],
+        "timestamp": "2023-07-27T16:45:00",
+        "user_name": "孙八"
+    },
+    {
+        "id": "3dea2fe8-4dc0-4b6a-be7d-65387b67dd4b",
+        "dish_id": "b8c9d0e1-f2a3-b4c5-d6e7-f8a9b0c1d2e3",
+        "rating": 5,
+        "comment": "非常好喝",
+        "image_paths": [],
+        "timestamp": "2025-03-15T01:01:24.671676",
+        "user_name": "匿名用户"
+    },
+    {
+        "id": "75a14877-f5dd-47f6-8b7e-855b09ac5ce5",
+        "dish_id": "b8c9d0e1-f2a3-b4c5-d6e7-f8a9b0c1d2e3",
+        "rating": 5,
+        "comment": "不错",
+        "image_paths": [],
+        "timestamp": "2025-03-15T01:01:33.269393",
+        "user_name": "匿名用户"
+    }
+]

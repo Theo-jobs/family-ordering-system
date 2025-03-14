@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>家庭点餐系统</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 加载中指示器 -->
+        <div v-if="loading" class="loading-overlay">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">加载中...</span>
+            </div>
+        </div>
+        
+        <!-- 顶部导航栏 -->
+        <nav-bar 
+            :active-tab="activeTab" 
+            @change-tab="changeTab"
+            :cart-count="cartItems.length">
+        </nav-bar>
+        
+        <!-- 主内容区域 -->
+        <div class="container-fluid main-content">
+            <!-- 菜单页面 -->
+            <div v-if="activeTab === 'menu'" class="tab-content">
+                <menu-component 
+                    ref="menuComponent"
+                    :categories="categories" 
+                    :active-category="activeCategory"
+                    @change-category="changeCategory"
+                    @view-dish="viewDish"
+                    @add-to-cart="addToCart"
+                    @change-tab="changeTab">
+                </menu-component>
+            </div>
+            
+            <!-- 菜品详情页面 -->
+            <div v-if="activeTab === 'dish-detail'" class="tab-content">
+                <dish-detail 
+                    :dish="selectedDish" 
+                    @back="activeTab = 'menu'"
+                    @add-to-cart="addToCart"
+                    @edit-dish="editDish">
+                </dish-detail>
+            </div>
+            
+            <!-- 菜品编辑页面 -->
+            <div v-if="activeTab === 'edit-dish'" class="tab-content">
+                <edit-dish 
+                    :dish="selectedDish" 
+                    :categories="categories"
+                    @back="activeTab = 'dish-detail'"
+                    @update-dish="updateDish">
+                </edit-dish>
+            </div>
+            
+            <!-- 购物车页面 -->
+            <div v-if="activeTab === 'cart'" class="tab-content">
+                <cart-component 
+                    :cart-items="cartItems" 
+                    @update-quantity="updateCartQuantity"
+                    @remove-item="removeFromCart"
+                    @checkout="checkout"
+                    @clear-cart="clearCart"
+                    @change-tab="changeTab">
+                </cart-component>
+            </div>
+            
+            <!-- 订单管理页面 -->
+            <div v-if="activeTab === 'orders'" class="tab-content">
+                <order-management 
+                    :orders="orders"
+                    @view-order="viewOrder"
+                    @change-tab="changeTab">
+                </order-management>
+            </div>
+            
+            <!-- 订单详情页面 -->
+            <div v-if="activeTab === 'order-detail'" class="tab-content">
+                <order-detail 
+                    :order="selectedOrder" 
+                    @back="activeTab = 'orders'"
+                    @add-review="showReviewForm">
+                </order-detail>
+            </div>
+            
+            <!-- 添加菜品页面 -->
+            <div v-if="activeTab === 'add-dish'" class="tab-content">
+                <add-dish 
+                    :categories="categories"
+                    @save-dish="saveDish"
+                    @back="activeTab = 'menu'">
+                </add-dish>
+            </div>
+            
+            <!-- 评价页面 -->
+            <div v-if="activeTab === 'review'" class="tab-content">
+                <review-component 
+                    :dish="reviewDish" 
+                    @save-review="saveReview"
+                    @back="activeTab = 'order-detail'">
+                </review-component>
+            </div>
+        </div>
+        
+        <!-- 提示消息 -->
+        <div v-if="notification.show" class="notification" :class="notification.type">
+            {{ notification.message }}
+        </div>
+    </div>
+    
+    <!-- 引入 JS 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- 引入相机组件 -->
+    <script src="js/components/camera-utils.js"></script>
+    
+    <!-- 引入组件 -->
+    <script src="js/components/NavBar.js"></script>
+    <script src="js/components/Menu.js"></script>
+    <script src="js/components/DishDetail.js"></script>
+    <script src="js/components/EditDish.js"></script>
+    <script src="js/components/Cart.js"></script>
+    <script src="js/components/OrderManagement.js"></script>
+    <script src="js/components/OrderDetail.js"></script>
+    <script src="js/components/AddDish.js"></script>
+    <script src="js/components/Review.js"></script>
+    
+    <!-- 主应用 -->
+    <script src="js/app.js"></script>
+</body>
+</html>
