@@ -13,8 +13,10 @@ Vue.component('order-detail', {
             selectedImage: null,
             deletingReviewId: null,
             isDeleting: false,
-            showQrCodeFullscreen: false,
-            reviews: {} // 存储每个菜品的评价
+            activeViewerType: null, // 'standard', 'qrcode', 'review'
+            reviews: {}, // 存储每个菜品的评价
+            reviewsLoading: false, // 评价数据加载状态
+            dishInfoLoading: false, // 菜品信息加载状态
         };
     },
     computed: {
@@ -37,40 +39,74 @@ Vue.component('order-detail', {
         }
     },
     mounted() {
+        // 设置加载状态
+        this.loading = true;
+        
         // 组件挂载时获取每个菜品的评价
         this.fetchAllReviews();
+        
+        // 添加ESC键监听，用于关闭所有图片查看器
+        document.addEventListener('keydown', this.handleKeyDown);
+        
+        // 添加全局点击监听器，用于事件委托处理
+        this.$el.addEventListener('click', this.handleGlobalClick);
+        
+        // 关闭加载状态
+        this.$nextTick(() => {
+            this.loading = false;
+        });
+    },
+    beforeDestroy() {
+        // 组件销毁前移除键盘监听器
+        document.removeEventListener('keydown', this.handleKeyDown);
+        
+        // 组件销毁前移除全局点击监听器
+        if (this.$el) {
+            this.$el.removeEventListener('click', this.handleGlobalClick);
+        }
     },
     template: `
         <div class="order-detail">
+            <!-- 页面加载状态指示器 -->
+            <div v-if="loading || reviewsLoading || dishInfoLoading" class="loading-overlay">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+            </div>
+            
             <!-- 返回按钮 -->
-            <div class="back-button" @click="goBack">
+            <div class="back-button float-on-hover" @click="goBack">
                 <i class="bi bi-arrow-left"></i>
             </div>
             
-            <h2 class="mb-3">订单详情</h2>
+            <div class="text-center mb-4">
+                <h2 class="mb-2 fade-in">订单详情</h2>
+                <div class="text-muted small">
+                    <span class="badge bg-light text-dark me-2">订单号: {{ formatOrderId(order.id) }}</span>
+                    <span class="order-status" :class="getStatusClass(order.status)">
+                        {{ getStatusText(order.status) }}
+                    </span>
+                </div>
+            </div>
             
             <!-- 订单基本信息 -->
             <div class="card mb-3">
                 <div class="card-body">
-                    <div class="row mb-2">
-                        <div class="col-4">订单号:</div>
-                        <div class="col-8">{{ formatOrderId(order.id) }}</div>
+                    <div class="card-row mb-2">
+                        <div class="card-row-label">下单时间:</div>
+                        <div class="card-row-content">{{ formatDate(order.timestamp) }}</div>
                     </div>
-                    <div class="row mb-2">
-                        <div class="col-4">下单时间:</div>
-                        <div class="col-8">{{ formatDate(order.timestamp) }}</div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-4">订单状态:</div>
-                        <div class="col-8">
+                    <div class="card-row mb-2">
+                        <div class="card-row-label">订单状态:</div>
+                        <div class="card-row-content">
                             <span class="order-status" :class="getStatusClass(order.status)">
                                 {{ getStatusText(order.status) }}
                             </span>
                         </div>
                     </div>
-                    <div v-if="order.note" class="row mb-2">
-                        <div class="col-4">备注:</div>
-                        <div class="col-8">{{ order.note }}</div>
+                    <div v-if="order.note" class="card-row mb-2">
+                        <div class="card-row-label">备注:</div>
+                        <div class="card-row-content">{{ order.note }}</div>
                     </div>
                 </div>
             </div>
@@ -78,9 +114,9 @@ Vue.component('order-detail', {
             <!-- 微信收款码 -->
             <div class="card mb-3">
                 <div class="card-body text-center">
-                    <h5 class="card-title mb-3">扫码支付</h5>
-                    <div class="qr-code-container" @click="showQrCodeFullscreen = true" style="cursor: pointer;">
-                        <img :src="qrCodeUrl" alt="微信支付" style="max-width: 200px; border: 1px solid #eee; border-radius: 4px;">
+                    <h5 class="card-title mb-3"><i class="bi bi-qr-code pulsing-icon"></i> 扫码支付</h5>
+                    <div class="qr-code-container" style="cursor: pointer;">
+                        <img :src="qrCodeUrl" alt="微信支付" class="interactive-image" data-action="show-qrcode">
                         <div class="mt-2 text-muted small">
                             <i class="bi bi-zoom-in me-1"></i>点击二维码放大
                         </div>
@@ -91,12 +127,14 @@ Vue.component('order-detail', {
             <!-- 订单菜品列表 -->
             <div class="card mb-3">
                 <div class="card-header">
-                    <h5 class="mb-0">订单菜品</h5>
+                    <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>订单菜品</h5>
                 </div>
                 <div class="list-group list-group-flush">
                     <div v-for="(item, index) in order.items" :key="index" class="list-group-item p-3">
                         <div class="d-flex">
-                            <img :src="item.image_path" class="cart-item-img me-3" :alt="item.dish_name">
+                            <div class="interactive-image me-3" data-action="show-image" :data-path="item.image_path">
+                                <img :src="item.image_path" class="cart-item-img" :alt="item.dish_name">
+                            </div>
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between">
                                     <h5 class="mb-1">{{ item.dish_name }}</h5>
@@ -105,8 +143,8 @@ Vue.component('order-detail', {
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <div class="text-muted">单价: ¥{{ item.price.toFixed(2) }}</div>
-                                    <div class="cart-item-price">¥{{ (item.price * item.quantity).toFixed(2) }}</div>
+                                    <div class="text-muted">单成本: ¥{{ item.price.toFixed(2) }}</div>
+                                    <div class="cart-item-cost">¥{{ (item.price * item.quantity).toFixed(2) }}</div>
                                 </div>
                                 
                                 <!-- 评价系统 -->
@@ -129,7 +167,8 @@ Vue.component('order-detail', {
                                                         :key="imgIndex" 
                                                         :src="imgPath" 
                                                         class="review-image" 
-                                                        @click="showImage(imgPath)"
+                                                        data-action="show-review-image"
+                                                        :data-path="imgPath"
                                                         @error="handleReviewImageError"
                                                     >
                                                 </div>
@@ -157,7 +196,7 @@ Vue.component('order-detail', {
                 </div>
                 <div class="card-footer">
                     <div class="d-flex justify-content-between fw-bold">
-                        <span>总计:</span>
+                        <span>成本总计:</span>
                         <span class="text-danger">¥{{ order.total_price.toFixed(2) }}</span>
                     </div>
                 </div>
@@ -166,7 +205,7 @@ Vue.component('order-detail', {
             <!-- 管理员操作区 - 更改订单状态 -->
             <div class="card mb-3">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">订单操作</h5>
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>订单操作</h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-2 mb-3">
@@ -182,7 +221,7 @@ Vue.component('order-detail', {
                             <button 
                                 class="btn btn-primary w-100" 
                                 :disabled="!newStatus || updatingStatus || newStatus === order.status" 
-                                @click="updateStatus">
+                                @click.prevent="updateStatus">
                                 <span v-if="updatingStatus">
                                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                 </span>
@@ -192,7 +231,7 @@ Vue.component('order-detail', {
                     </div>
                     
                     <!-- 删除订单按钮 -->
-                    <button class="btn btn-outline-danger w-100" @click="confirmDeleteOrder" :disabled="isDeleting">
+                    <button class="btn btn-outline-danger w-100" @click.prevent="confirmDeleteOrder" :disabled="isDeleting">
                         <span v-if="isDeleting">
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                             删除中...
@@ -204,23 +243,28 @@ Vue.component('order-detail', {
                 </div>
             </div>
             
-            <!-- 图片查看器 -->
-            <div v-if="selectedImage" class="image-viewer" @click="selectedImage = null">
-                <div class="image-viewer-content">
-                    <img :src="selectedImage" class="full-image">
-                </div>
-            </div>
+            <!-- 使用新的图片查看器组件 -->
+            <image-viewer 
+                v-if="selectedImage && activeViewerType === 'standard'"
+                :image-path="selectedImage"
+                viewer-type="standard"
+                @close="closeImageViewer"
+            ></image-viewer>
             
-            <!-- 二维码全屏查看器 -->
-            <div v-if="showQrCodeFullscreen" class="image-viewer" @click="showQrCodeFullscreen = false">
-                <div class="image-viewer-content text-center">
-                    <img :src="qrCodeUrl" style="max-width: 80%; max-height: 80vh;">
-                    <div class="mt-3 text-white">
-                        <h4>微信扫码支付</h4>
-                        <p>点击任意位置关闭</p>
-                    </div>
-                </div>
-            </div>
+            <image-viewer 
+                v-if="activeViewerType === 'qrcode'"
+                :image-path="qrCodeUrl"
+                viewer-type="qrcode"
+                title="微信扫码支付"
+                @close="closeImageViewer"
+            ></image-viewer>
+            
+            <image-viewer 
+                v-if="selectedImage && activeViewerType === 'review'"
+                :image-path="selectedImage"
+                viewer-type="review"
+                @close="closeImageViewer"
+            ></image-viewer>
         </div>
     `,
     methods: {
@@ -271,35 +315,58 @@ Vue.component('order-detail', {
                 });
         },
         addReview(dishId) {
+            this.dishInfoLoading = true;
+            
             // 获取菜品信息
             axios.get(`/api/dishes/${dishId}`)
                 .then(response => {
-                    // 发送评价事件，传递菜品信息
-                    this.$emit('add-review', response.data);
+                    // 发送评价事件，传递菜品信息和订单ID
+                    const dishWithOrderInfo = {
+                        ...response.data,
+                        order_id: this.order.id  // 添加订单ID
+                    };
+                    this.$emit('add-review', dishWithOrderInfo);
                 })
                 .catch(error => {
                     console.error('获取菜品信息失败:', error);
                     this.showNotification('获取菜品信息失败，请稍后再试', 'error');
+                })
+                .finally(() => {
+                    this.dishInfoLoading = false;
                 });
+        },
+        openQrCode(event) {
+            if (event) event.stopPropagation();
+            this.activeViewerType = 'qrcode';
         },
         showImage(imagePath) {
             this.selectedImage = imagePath;
+            this.activeViewerType = 'standard';
+        },
+        showReviewImage(imagePath) {
+            this.selectedImage = imagePath;
+            this.activeViewerType = 'review';
+        },
+        closeImageViewer() {
+            this.selectedImage = null;
+            this.activeViewerType = null;
         },
         fetchAllReviews() {
-            // 获取所有评价
-            axios.get('/api/reviews/')
+            this.reviewsLoading = true;
+            
+            // 获取当前订单的所有评价
+            axios.get(`/api/reviews/order/${this.order.id}`)
                 .then(response => {
-                    const allReviews = response.data;
+                    const orderReviews = response.data;
                     
                     // 为每个菜品查找评价
                     this.order.items.forEach(item => {
-                        const dishReviews = allReviews.filter(
+                        const dishReviews = orderReviews.filter(
                             review => review.dish_id === item.dish_id
                         );
                         
                         if (dishReviews.length > 0) {
                             // 获取最新的评价（假设已按时间排序）
-                            // 也可以用时间戳比较找出最新的
                             const latestReview = dishReviews.sort((a, b) => 
                                 new Date(b.timestamp) - new Date(a.timestamp)
                             )[0];
@@ -311,6 +378,10 @@ Vue.component('order-detail', {
                 })
                 .catch(error => {
                     console.error('获取评价失败:', error);
+                    this.showNotification('获取评价数据失败，请刷新重试', 'error');
+                })
+                .finally(() => {
+                    this.reviewsLoading = false;
                 });
         },
         hasReview(dishId) {
@@ -379,11 +450,62 @@ Vue.component('order-detail', {
         handleReviewImageError(event) {
             // 评价图片加载失败时使用备用图片
             console.log("评价图片加载失败");
+            event.target.onerror = null; // 防止无限循环
             event.target.src = "/static/images/reviews/default-review.jpg";
+            // 如果默认图片也加载失败，使用内联base64小图标
+            event.target.onerror = function() {
+                event.target.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWxpbmUgcG9pbnRzPSIyMSAxNSAxNiAxMCA1IDIxIj48L3BvbHlsaW5lPjwvc3ZnPg==";
+            };
         },
         showNotification(message, type) {
             // 调用父组件定义的通知方法
             this.$root.showNotification(message, type);
+        },
+        handleKeyDown(event) {
+            // 监听ESC键，关闭所有查看器
+            if (event.key === 'Escape') {
+                this.closeImageViewer();
+            }
+        },
+        handleGlobalClick(event) {
+            // 使用事件委托处理点击事件
+            const target = event.target;
+            
+            // 找到最近的带有data-action属性的元素
+            const actionElement = target.closest('[data-action]');
+            
+            if (actionElement) {
+                const action = actionElement.dataset.action;
+                
+                // 阻止事件冒泡
+                event.stopPropagation();
+                
+                // 根据action属性执行相应的方法
+                switch(action) {
+                    case 'show-qrcode':
+                        this.openQrCode(event);
+                        break;
+                    case 'show-image':
+                        this.showImage(actionElement.dataset.path);
+                        break;
+                    case 'show-review-image':
+                        this.showReviewImage(actionElement.dataset.path);
+                        break;
+                    case 'close-image':
+                        this.selectedImage = null;
+                        break;
+                    case 'close-qrcode':
+                        this.closeImageViewer();
+                        break;
+                    case 'close-review-image':
+                        this.closeImageViewer();
+                        break;
+                    case 'close-viewer':
+                        this.closeImageViewer();
+                        break;
+                    // 可以添加更多的操作类型
+                }
+            }
         }
     }
 });

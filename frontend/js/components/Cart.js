@@ -28,22 +28,22 @@ Vue.component('cart-component', {
     template: `
         <div class="cart">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">购物车</h2>
+                <h2 class="mb-0">已点单</h2>
                 <span v-if="!isEmpty" class="badge bg-primary rounded-pill">{{ totalItems }}件商品</span>
             </div>
             
-            <!-- 空购物车提示 -->
+            <!-- 空已点单提示 -->
             <div v-if="isEmpty" class="text-center my-5 py-5">
                 <i class="bi bi-cart text-muted" style="font-size: 3.5rem;"></i>
-                <p class="mt-3 text-muted">购物车是空的</p>
+                <p class="mt-3 text-muted">已点单是空的</p>
                 <button class="btn btn-primary mt-3" @click="goToMenu">
                     <i class="bi bi-grid me-1"></i>去点餐
                 </button>
             </div>
             
-            <!-- 购物车内容 -->
+            <!-- 已点单内容 -->
             <div v-else>
-                <!-- 购物车项目列表 -->
+                <!-- 已点单项目列表 -->
                 <div class="card mb-3">
                     <div class="list-group list-group-flush">
                         <div v-for="(item, index) in cartItems" :key="index" class="list-group-item cart-item">
@@ -58,7 +58,7 @@ Vue.component('cart-component', {
                                     </div>
                                     
                                     <div class="text-muted small mb-2">
-                                        单价: ¥{{ item.price.toFixed(2) }}
+                                        单成本: ¥{{ item.price.toFixed(2) }}
                                     </div>
                                     
                                     <div class="d-flex justify-content-between align-items-center mt-2">
@@ -71,7 +71,7 @@ Vue.component('cart-component', {
                                                 <i class="bi bi-plus"></i>
                                             </div>
                                         </div>
-                                        <div class="cart-item-price">
+                                        <div class="cart-item-cost">
                                             ¥{{ (item.price * item.quantity).toFixed(2) }}
                                         </div>
                                     </div>
@@ -104,7 +104,7 @@ Vue.component('cart-component', {
                 <div class="card mb-3">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="text-muted">商品总计</span>
+                            <span class="text-muted">成本总计</span>
                             <span>¥{{ totalPrice.toFixed(2) }}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -113,7 +113,7 @@ Vue.component('cart-component', {
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="fw-bold">总计:</span>
+                            <span class="fw-bold">成本总计:</span>
                             <span class="fs-4 fw-bold text-danger">¥{{ totalPrice.toFixed(2) }}</span>
                         </div>
                         <div class="d-grid gap-2">
@@ -123,11 +123,11 @@ Vue.component('cart-component', {
                                     提交中...
                                 </span>
                                 <span v-else>
-                                    <i class="bi bi-clipboard-check me-1"></i> 去结算
+                                    <i class="bi bi-clipboard-check me-1"></i> 确认点单
                                 </span>
                             </button>
                             <button class="btn btn-outline-secondary" @click="clearCart">
-                                <i class="bi bi-trash me-1"></i> 清空购物车
+                                <i class="bi bi-trash me-1"></i> 清空已点单
                             </button>
                         </div>
                     </div>
@@ -158,7 +158,7 @@ Vue.component('cart-component', {
             this.$emit('remove-item', index);
         },
         clearCart() {
-            if (confirm('确定要清空购物车吗？')) {
+            if (confirm('确定要清空已点单吗？')) {
                 this.$emit('clear-cart');
             }
         },
@@ -172,7 +172,7 @@ Vue.component('cart-component', {
         
         confirmRemoveItem(index) {
             // 使用轻量级确认而非标准confirm
-            if (window.confirm(`确定要从购物车移除 ${this.cartItems[index].dish_name} 吗？`)) {
+            if (window.confirm(`确定要从已点单移除 ${this.cartItems[index].dish_name} 吗？`)) {
                 this.removeItem(index);
             }
         },
@@ -182,7 +182,7 @@ Vue.component('cart-component', {
             this.$emit('remove-item', index);
             
             // 显示移除成功的提示
-            this.$root.showNotification(`已从购物车移除 ${removedItem.dish_name}`, 'info');
+            this.$root.showNotification(`已从已点单移除 ${removedItem.dish_name}`, 'info');
         },
         checkout() {
             this.submitting = true;

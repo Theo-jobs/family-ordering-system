@@ -49,9 +49,16 @@ def get_all_dishes():
                 # 获取最新评价
                 latest_review = max(dish_reviews, key=lambda x: x.get('timestamp', ''))
                 dish['latest_review'] = latest_review.get('comment', '')[:50] + '...' if len(latest_review.get('comment', '')) > 50 else latest_review.get('comment', '')
+                
+                # 添加最新评价的图片路径（如果有的话）
+                if latest_review.get('image_paths') and len(latest_review.get('image_paths')) > 0:
+                    dish['review_image'] = latest_review.get('image_paths')[0]  # 使用第一张图片
+                else:
+                    dish['review_image'] = None
             else:
                 dish['avg_rating'] = None
                 dish['latest_review'] = None
+                dish['review_image'] = None
         
         print(f"返回菜品数据: {len(dishes)} 个菜品")
         return jsonify(dishes)
@@ -128,9 +135,16 @@ def get_dishes_by_category(category):
                 # 获取最新评价
                 latest_review = max(dish_reviews, key=lambda x: x.get('timestamp', ''))
                 dish['latest_review'] = latest_review.get('comment', '')[:50] + '...' if len(latest_review.get('comment', '')) > 50 else latest_review.get('comment', '')
+                
+                # 添加最新评价的图片路径（如果有的话）
+                if latest_review.get('image_paths') and len(latest_review.get('image_paths')) > 0:
+                    dish['review_image'] = latest_review.get('image_paths')[0]  # 使用第一张图片
+                else:
+                    dish['review_image'] = None
             else:
                 dish['avg_rating'] = None
                 dish['latest_review'] = None
+                dish['review_image'] = None
         
         return jsonify(category_dishes)
     except Exception as e:

@@ -1,10 +1,10 @@
 Vue.component('menu-component', {
     props: {
-        categories: {
+        categoriesData: {
             type: Array,
             required: true
         },
-        activeCategory: {
+        activeCategoryId: {
             type: String,
             required: true
         }
@@ -12,25 +12,41 @@ Vue.component('menu-component', {
     data() {
         return {
             dishes: [],
+            categories: [],
+            activeCategory: null,
+            searchQuery: '',
             loading: false,
             error: null,
-            searchQuery: '',
             transitionName: 'fade',
-            previousCategory: null,
+            lastCategoryIndex: 0,
             itemQuantities: {} // 存储每个菜品的数量
         };
     },
     computed: {
         filteredDishes() {
-            if (!this.searchQuery.trim()) {
-                return this.dishes;
+            if (!this.dishes) return [];
+            
+            let result = this.dishes;
+            
+            // 按类别筛选
+            if (this.activeCategory) {
+                result = result.filter(dish => {
+                    // 兼容处理不同的分类字段
+                    const dishCategory = dish.categoryId || dish.category;
+                    return dishCategory === this.activeCategory.id;
+                });
             }
             
-            const query = this.searchQuery.toLowerCase();
-            return this.dishes.filter(dish => 
-                dish.name.toLowerCase().includes(query) || 
-                (dish.description && dish.description.toLowerCase().includes(query))
-            );
+            // 按搜索关键词筛选
+            if (this.searchQuery) {
+                const query = this.searchQuery.toLowerCase();
+                result = result.filter(dish => 
+                    (dish.name && dish.name.toLowerCase().includes(query)) || 
+                    (dish.description && dish.description.toLowerCase().includes(query))
+                );
+            }
+            
+            return result;
         },
         hasResults() {
             return this.filteredDishes.length > 0;
@@ -59,11 +75,15 @@ Vue.component('menu-component', {
         }
     },
     mounted() {
-        this.fetchDishes();
-        // 初始滚动到当前类别
-        this.$nextTick(() => {
-            this.scrollCategoryIntoView(this.activeCategory);
-        });
+        console.log("Menu组件mounted, activeCategoryId:", this.activeCategoryId);
+        
+        // 加载菜品和分类数据
+        this.fetchCategories();
+        
+        // 设置组件引用，便于父组件调用
+        if (this.$parent.$refs.menuComponent !== this) {
+            this.$parent.$refs.menuComponent = this;
+        }
     },
     template: `
         <div>
@@ -99,59 +119,29 @@ Vue.component('menu-component', {
             
             <!-- 类别选择导航 -->
             <div class="category-nav" ref="categoryNav">
-                <div 
-                    v-for="category in categories" 
-                    :key="category.id"
-                    class="category-item" 
-                    :class="{ active: activeCategory === category.id }"
-                    :ref="'category-'+category.id"
-                    @click="changeCategory(category.id)"
-                >
-                    <i class="bi" :class="getCategoryIcon(category.id)"></i>
-                    <span class="ms-1">{{ category.name }}</span>
+                <div v-for="category in categories" 
+                     :key="category.id" 
+                     class="category-item" 
+                     :class="{ active: activeCategory && activeCategory.id === category.id }"
+                     @click="setActiveCategory(category)">
+                    <span class="category-emoji">{{ getCategoryIcon(category.id).emoji }}</span>
+                    {{ category.name }}
                 </div>
             </div>
             
             <!-- 菜品内容区 - 添加过渡效果 -->
-            <transition :name="transitionName" mode="out-in">
-                <div :key="activeCategory">
-                    <!-- 加载提示 -->
-                    <div v-if="loading" class="loading-indicator my-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">加载中...</span>
-                        </div>
+            <transition :name="transitionName">
+                <div v-if="!loading" class="dishes-container">
+                    <div v-if="filteredDishes.length === 0" class="no-dishes">
+                        <i class="bi bi-emoji-frown"></i>
+                        <p>没有找到符合条件的菜品</p>
                     </div>
-                    
-                    <!-- 错误提示 -->
-                    <div v-else-if="error" class="alert alert-danger my-3" role="alert">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        {{ error }}
-                        <button class="btn btn-sm btn-outline-danger ms-2" @click="fetchDishes">重试</button>
-                    </div>
-                    
-                    <!-- 搜索无结果 -->
-                    <div v-else-if="searchQuery && !hasResults" class="text-center my-5">
-                        <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
-                        <p class="mt-3 text-muted">未找到符合"{{ searchQuery }}"的菜品</p>
-                        <button class="btn btn-outline-primary mt-2" @click="searchQuery = ''">清除搜索</button>
-                    </div>
-                    
-                    <!-- 无菜品提示 -->
-                    <div v-else-if="!searchQuery && dishes.length === 0" class="text-center my-5">
-                        <i class="bi bi-basket text-muted" style="font-size: 3rem;"></i>
-                        <p class="mt-3">该类别暂无菜品</p>
-                        <button class="btn btn-primary mt-2" @click="goToAddDish">
-                            <i class="bi bi-plus-circle me-1"></i>添加菜品
-                        </button>
-                    </div>
-                    
-                    <!-- 菜品网格 -->
-                    <div v-else class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <div v-else class="dishes-grid">
                         <div v-for="dish in filteredDishes" :key="dish.id" class="col">
                             <div class="card dish-card h-100" @click="viewDish(dish.id)">
                                 <div class="position-relative">
-                                    <img :src="dish.image_path" class="card-img-top" :alt="dish.name" @error="handleImageError($event, dish)">
-                                    <div class="dish-price">¥{{ (dish.price || 0).toFixed(2) }}</div>
+                                    <img :src="dish.image_path" class="card-img-top dish-card-img" :alt="dish.name" @error="handleImageError($event, dish)">
+                                    <div class="dish-cost">¥{{ (dish.price || 0).toFixed(2) }}</div>
                                 </div>
                                 <div class="card-body d-flex flex-column">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -162,9 +152,11 @@ Vue.component('menu-component', {
                                         </div>
                                     </div>
                                     <p class="card-text text-muted small mb-3 flex-grow-1">{{ dish.description || '暂无描述' }}</p>
-                                    <div v-if="dish.latest_review" class="mb-3 small">
+                                    <div v-if="dish.latest_review" class="dish-latest-review small">
                                         <i class="bi bi-chat-quote me-1 text-muted"></i> 
-                                        <span class="text-truncate d-inline-block" style="max-width: 100%;">{{ dish.latest_review }}</span>
+                                        <span class="text-truncate d-inline-block" style="max-width: 85%;">{{ dish.latest_review }}</span>
+                                        <img v-if="dish.review_image" :src="dish.review_image" class="dish-latest-review-image" 
+                                             @error="handleReviewImageError">
                                     </div>
                                     
                                     <!-- 购物车数量控制 - 已简化只保留数量控制 -->
@@ -192,22 +184,48 @@ Vue.component('menu-component', {
                     </div>
                 </div>
             </transition>
+            <div v-if="loading" class="loading-container">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+            </div>
         </div>
     `,
     methods: {
-        changeCategory(categoryId) {
-            if (categoryId !== this.activeCategory) {
-                this.$emit('change-category', categoryId);
+        setActiveCategory(category) {
+            // 确定过渡方向
+            const newIndex = this.getCategoryIndex(category);
+            const oldIndex = this.getCategoryIndex(this.activeCategory);
+            
+            if (newIndex > oldIndex) {
+                this.transitionName = 'slide-left';
+            } else if (newIndex < oldIndex) {
+                this.transitionName = 'slide-right';
+            } else {
+                this.transitionName = 'fade';
             }
+            
+            this.lastCategoryIndex = oldIndex;
+            this.activeCategory = category;
+            this.scrollCategoryIntoView();
+            
+            // 添加延迟以确保过渡效果完成
+            this.loading = true;
+            setTimeout(() => {
+                this.loading = false;
+            }, 100);
+            
+            // 通知父组件类别已更改
+            this.$emit('change-category', category.id);
         },
         viewDish(dishId) {
             this.$emit('view-dish', dishId);
         },
         getItemQuantity(dishId) {
-            // 检查购物车中是否已有该菜品
+            // 检查已点单中是否已有该菜品
             const cartItem = this.$root.cartItems.find(item => item.dish_id === dishId);
             
-            // 如果购物车中已有该菜品，使用购物车中的数量
+            // 如果已点单中已有该菜品，使用已点单中的数量
             if (cartItem) {
                 // 确保itemQuantities中有该菜品的数量记录
                 if (!this.itemQuantities[dishId]) {
@@ -216,7 +234,7 @@ Vue.component('menu-component', {
                 return this.itemQuantities[dishId];
             }
             
-            // 如果购物车中没有该菜品，且本地没有数量记录，则设置为0
+            // 如果已点单中没有该菜品，且本地没有数量记录，则设置为0
             if (!this.itemQuantities[dishId]) {
                 this.$set(this.itemQuantities, dishId, 0);
             }
@@ -230,7 +248,7 @@ Vue.component('menu-component', {
                 // 找到当前菜品
                 const dish = this.dishes.find(d => d.id === dishId);
                 if (dish) {
-                    // 直接更新购物车
+                    // 直接更新已点单
                     this.updateCartDirectly(dish, this.itemQuantities[dishId]);
                 }
             }
@@ -245,7 +263,7 @@ Vue.component('menu-component', {
             // 找到当前菜品
             const dish = this.dishes.find(d => d.id === dishId);
             if (dish) {
-                // 直接更新购物车
+                // 直接更新已点单
                 this.updateCartDirectly(dish, this.itemQuantities[dishId]);
             }
         },
@@ -260,12 +278,12 @@ Vue.component('menu-component', {
             // 找到当前菜品
             const dish = this.dishes.find(d => d.id === dishId);
             if (dish) {
-                // 直接更新购物车
+                // 直接更新已点单
                 this.updateCartDirectly(dish, this.itemQuantities[dishId]);
             }
         },
         updateCartDirectly(dish, quantity) {
-            // 创建购物车项对象
+            // 创建已点单项对象
             const cartItem = {
                 dish_id: dish.id,
                 dish_name: dish.name,
@@ -276,7 +294,7 @@ Vue.component('menu-component', {
                 replace: true
             };
             
-            // 如果数量为0，并且商品已在购物车，则应该移除
+            // 如果数量为0，并且商品已在已点单，则应该移除
             if (quantity === 0) {
                 cartItem.remove = true;
             }
@@ -317,58 +335,179 @@ Vue.component('menu-component', {
         fetchDishes() {
             this.loading = true;
             this.error = null;
+            console.log("开始获取菜品数据");
             
-            console.log("获取菜品数据，类别:", this.activeCategory);
+            let url = '/api/dishes';
             
-            // 根据当前选择的类别获取菜品
-            axios.get(`/api/dishes/category/${this.activeCategory}`)
+            // 如果有activeCategory，添加分类过滤参数
+            if (this.activeCategory) {
+                console.log("根据分类过滤菜品:", this.activeCategory.id);
+                url = `/api/dishes?category=${this.activeCategory.id}`;
+            }
+            
+            console.log("请求URL:", url);
+            
+            // 使用axios替代fetch，与其他组件保持一致
+            axios.get(url)
                 .then(response => {
-                    console.log("获取到菜品数据:", response.data);
-                    this.dishes = response.data;
+                    console.log("从API获取到菜品数据:", response.data);
+                    if (response.data && response.data.length > 0) {
+                        // 添加categoryId字段以兼容前端逻辑
+                        const processedData = response.data.map(dish => {
+                            if (dish.category && !dish.categoryId) {
+                                dish.categoryId = dish.category;
+                            }
+                            return dish;
+                        });
+                        console.log("处理后的菜品数据:", processedData);
+                        this.dishes = processedData;
+                    } else {
+                        console.log("API返回的菜品数据为空");
+                        this.dishes = [];
+                    }
                 })
                 .catch(error => {
                     console.error('获取菜品失败:', error);
-                    this.error = '获取菜品信息失败，请稍后再试';
+                    this.error = error.response?.data?.message || '获取菜品数据失败，请稍后再试';
+                    // 使用空数组，显示无数据状态
+                    this.dishes = [];
                 })
                 .finally(() => {
                     this.loading = false;
                 });
         },
+        fetchCategories() {
+            // 先使用默认分类数据
+            const defaultCategories = [
+                { id: 'hot', name: '热菜' },
+                { id: 'cold', name: '凉菜' },
+                { id: 'staple', name: '主食' },
+                { id: 'drink', name: '饮料' },
+                { id: 'coffee', name: '咖啡' },
+                { id: 'dessert', name: '甜点' }
+            ];
+            
+            console.log("设置默认分类数据");
+            // 设置默认分类数据
+            this.categories = defaultCategories;
+            
+            // 处理初始分类
+            this.handleInitialCategory();
+            
+            // 检查后端API是否存在
+            fetch('/api/health')
+                .then(response => {
+                    if (response.ok) {
+                        // 如果健康检查成功，才尝试获取分类数据
+                        console.log("尝试从API获取分类数据");
+                        return fetch('/api/categories');
+                    } else {
+                        throw new Error('后端API不可用');
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('获取类别失败');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("从API获取到分类数据:", data);
+                    if (data && data.length > 0) {
+                        this.categories = data;
+                        
+                        // 重新处理初始分类
+                        this.handleInitialCategory();
+                    }
+                })
+                .catch(error => {
+                    console.error('获取分类失败:', error.message);
+                    // 继续使用默认分类
+                });
+        },
+        
+        // 处理初始分类选择
+        handleInitialCategory() {
+            // 如果有传入的activeCategoryId，尝试找到对应的类别
+            if (this.activeCategoryId) {
+                console.log("尝试使用props中的activeCategoryId:", this.activeCategoryId);
+                const categoryObj = this.categories.find(c => c.id === this.activeCategoryId);
+                if (categoryObj) {
+                    console.log("找到匹配的分类对象:", categoryObj);
+                    this.activeCategory = categoryObj;
+                } else {
+                    console.log("未找到匹配的分类对象，使用第一个分类");
+                    if (this.categories.length > 0) {
+                        this.activeCategory = this.categories[0];
+                    }
+                }
+            } else if (!this.activeCategory && this.categories.length > 0) {
+                // 如果没有activeCategoryId且没有设置activeCategory，使用第一个分类
+                console.log("没有指定分类，使用第一个分类");
+                this.activeCategory = this.categories[0];
+            }
+            
+            // 获取菜品
+            if (this.activeCategory) {
+                this.fetchDishes();
+            }
+        },
         handleImageError(event, dish) {
             // 图片加载失败时使用备用图片
             console.log("图片加载失败:", dish.image_path);
-            event.target.src = `/static/images/dishes/default-${dish.category || 'hot'}.jpg`;
+            const defaultImagePath = `/static/images/dishes/default-${dish.categoryId || 'hot'}.jpg`;
+            event.target.src = defaultImagePath;
+            
+            // 备用方案：如果默认图片也加载失败，使用内嵌的base64图片
+            event.target.onerror = function() {
+                // 一个小巧的灰色餐盘图标base64编码
+                const fallbackImage = 'data:image/png;base64,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';
+                event.target.src = fallbackImage;
+            };
+        },
+        handleReviewImageError() {
+            // 评价图片加载失败时使用备用图片
+            console.log("评价图片加载失败");
+            event.target.onerror = null; // 防止无限循环
+            event.target.src = "/static/images/reviews/default-review.jpg";
+            // 如果默认图片也加载失败，使用内联base64小图标
+            event.target.onerror = function() {
+                event.target.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNjY2NjY2MiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWxpbmUgcG9pbnRzPSIyMSAxNSAxNiAxMCA1IDIxIj48L3BvbHlsaW5lPjwvc3ZnPg==";
+            };
         },
         getCategoryIcon(categoryId) {
-            // 为每个类别返回合适的图标
+            // 为每个类别返回合适的图标和emoji
             const iconMap = {
-                'hot': 'bi-fire',
-                'cold': 'bi-snow',
-                'staple': 'bi-egg-fried',
-                'drink': 'bi-cup-straw',
-                'coffee': 'bi-cup-hot',
-                'dessert': 'bi-cake'
+                'hot': { icon: 'bi-fire', emoji: '🔥' },
+                'cold': { icon: 'bi-snow', emoji: '❄️' },
+                'staple': { icon: 'bi-egg-fried', emoji: '🍚' },
+                'drink': { icon: 'bi-cup-straw', emoji: '🥤' },
+                'coffee': { icon: 'bi-cup-hot', emoji: '☕' },
+                'dessert': { icon: 'bi-cake', emoji: '🍰' }
             };
             
-            return iconMap[categoryId] || 'bi-grid';
+            return iconMap[categoryId] || { icon: 'bi-grid', emoji: '📋' };
         },
-        getCategoryIndex(categoryId) {
-            // 获取类别在数组中的索引
-            return this.categories.findIndex(c => c.id === categoryId);
+        getCategoryIndex(category) {
+            if (!category) return -1;
+            return this.categories.findIndex(c => c.id === category.id);
         },
-        scrollCategoryIntoView(categoryId) {
-            // 滚动到当前选中的类别
-            const categoryEl = this.$refs[`category-${categoryId}`];
-            if (categoryEl && categoryEl[0] && this.$refs.categoryNav) {
-                const navEl = this.$refs.categoryNav;
-                
-                // 计算滚动位置使元素居中
-                const navWidth = navEl.offsetWidth;
-                const itemWidth = categoryEl[0].offsetWidth;
-                const itemLeft = categoryEl[0].offsetLeft;
-                
-                // 设置滚动位置，使选中的类别尽量居中
-                navEl.scrollLeft = itemLeft - (navWidth / 2) + (itemWidth / 2);
+        scrollCategoryIntoView() {
+            if (this.activeCategory) {
+                this.$nextTick(() => {
+                    const activeEl = this.$el.querySelector('.category-item.active');
+                    if (activeEl) {
+                        const container = this.$el.querySelector('.category-nav');
+                        if (container) {
+                            const containerRect = container.getBoundingClientRect();
+                            const elRect = activeEl.getBoundingClientRect();
+                            
+                            // 计算滚动位置，使活动类别居中
+                            const scrollLeft = activeEl.offsetLeft - (containerRect.width / 2) + (elRect.width / 2);
+                            container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+                        }
+                    }
+                });
             }
         }
     }

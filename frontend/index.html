@@ -31,8 +31,8 @@
             <div v-if="activeTab === 'menu'" class="tab-content">
                 <menu-component 
                     ref="menuComponent"
-                    :categories="categories" 
-                    :active-category="activeCategory"
+                    :categories-data="categories" 
+                    :active-category-id="activeCategory"
                     @change-category="changeCategory"
                     @view-dish="viewDish"
                     @add-to-cart="addToCart"
@@ -54,14 +54,15 @@
             <!-- 菜品编辑页面 -->
             <div v-if="activeTab === 'edit-dish'" class="tab-content">
                 <edit-dish 
-                    :dish="selectedDish" 
+                    :dish_id="selectedDish.id" 
                     :categories="categories"
                     @back="activeTab = 'dish-detail'"
+                    @dish-updated="updateDish"
                     @update-dish="updateDish">
                 </edit-dish>
             </div>
             
-            <!-- 购物车页面 -->
+            <!-- 已点单页面 -->
             <div v-if="activeTab === 'cart'" class="tab-content">
                 <cart-component 
                     :cart-items="cartItems" 
@@ -113,18 +114,20 @@
             </div>
         </div>
         
-        <!-- 底部导航栏 -->
+        <!-- 通知提示 -->
+        <div v-if="notification.show" class="notification" :class="notification.type">
+            <div class="notification-content">
+                <i :class="getNotificationIcon(notification.type)" class="notification-icon"></i>
+                <span class="notification-message">{{ notification.message }}</span>
+            </div>
+        </div>
+        
+        <!-- 全局导航栏 -->
         <nav-bar 
             :active-tab="activeTab" 
-            @change-tab="changeTab"
-            :cart-count="cartTotalItems">
+            :cart-items-count="cartItems.length" 
+            @tab-change="changeTab">
         </nav-bar>
-        
-        <!-- 提示消息 -->
-        <div v-if="notification.show" class="notification" :class="notification.type">
-            <i class="bi" :class="getNotificationIcon(notification.type)"></i>
-            {{ notification.message }}
-        </div>
     </div>
     
     <!-- 引入 JS 库 -->
@@ -141,6 +144,7 @@
     <script src="js/components/EditDish.js"></script>
     <script src="js/components/Cart.js"></script>
     <script src="js/components/OrderManagement.js"></script>
+    <script src="js/components/ImageViewer.js"></script>
     <script src="js/components/OrderDetail.js"></script>
     <script src="js/components/AddDish.js"></script>
     <script src="js/components/Review.js"></script>

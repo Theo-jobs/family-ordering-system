@@ -62,6 +62,19 @@ def serve_static(path):
 def health_check():
     return jsonify({"status": "healthy"})
 
+# 获取菜品分类
+@app.route('/api/categories')
+def get_categories():
+    categories = [
+        { "id": "hot", "name": "热菜" },
+        { "id": "cold", "name": "凉菜" },
+        { "id": "staple", "name": "主食" },
+        { "id": "drink", "name": "饮料" },
+        { "id": "coffee", "name": "咖啡" },
+        { "id": "dessert", "name": "甜点" }
+    ]
+    return jsonify(categories)
+
 # 初始化数据并启动应用
 def initialize_app():
     # 确保所需目录存在

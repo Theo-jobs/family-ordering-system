@@ -62,6 +62,25 @@ def get_reviews_by_dish(dish_id):
         print(f"获取菜品评价错误: {str(e)}")
         return jsonify({"error": f"获取菜品评价错误: {str(e)}"}), 500
 
+# 按订单ID获取评价
+@reviews_bp.route('/order/<order_id>', methods=['GET'])
+def get_reviews_by_order_id(order_id):
+    try:
+        # 使用绝对路径
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(current_dir)
+        reviews_path = os.path.join(root_dir, 'static', 'data', 'reviews.json')
+        
+        reviews = read_json_file(reviews_path)
+        
+        # 过滤出特定订单的评价（兼容旧数据）
+        order_reviews = [review for review in reviews if review.get('order_id') == order_id]
+        
+        return jsonify(order_reviews)
+    except Exception as e:
+        print(f"获取订单评价错误: {str(e)}")
+        return jsonify({"error": f"获取订单评价错误: {str(e)}"}), 500
+
 # 添加新评价
 @reviews_bp.route('/', methods=['POST'])
 def add_review():
@@ -114,6 +133,7 @@ def add_review():
         new_review = {
             "id": str(uuid.uuid4()),
             "dish_id": data['dish_id'],
+            "order_id": data.get('order_id', None),  # 添加order_id关联
             "rating": data['rating'],
             "comment": data['comment'],
             "image_paths": image_paths,

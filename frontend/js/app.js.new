@@ -1,4 +1,4 @@
-// 定义主Vue应用
+﻿// 定义主Vue应用
 new Vue({
     el: '#app',
     data: {
@@ -105,9 +105,6 @@ new Vue({
             this.loading = false;
             return Promise.reject(error);
         });
-        
-        // 确保菜品数据更新时正确刷新界面
-        this.$on('dish-updated', this.updateDish);
     },
     methods: {
         // 标签切换
@@ -208,30 +205,17 @@ new Vue({
             
             // 更新本地缓存的菜品数据
             if (this.selectedDish && this.selectedDish.id === updatedDish.id) {
-                // 确保保留原有数据中的重要字段，如果更新的数据没有提供这些字段
-                this.selectedDish = {
-                    ...this.selectedDish,
-                    ...updatedDish,
-                    // 确保图片路径正确
-                    image_path: updatedDish.image_path || this.selectedDish.image_path,
-                    // 确保保留reviews数据
-                    reviews: this.selectedDish.reviews || []
-                };
-                
-                console.log("更新后的菜品数据:", this.selectedDish);
+                this.selectedDish = updatedDish;
             }
             
             // 返回菜品详情页
             this.activeTab = 'dish-detail';
             
-            // 刷新菜单组件中的数据
-            this.$nextTick(() => {
-                // 如果有菜单组件引用，则刷新数据
-                if (this.$refs.menuComponent) {
-                    this.$refs.menuComponent.fetchDishes();
-                    console.log("已触发菜单刷新");
-                }
-            });
+            // 如果菜品类别变化，需要刷新菜单
+            if (updatedDish.category === this.activeCategory) {
+                // 刷新当前类别下的菜品列表
+                this.$refs.menuComponent && this.$refs.menuComponent.fetchDishes();
+            }
         },
         
         // 添加到已点单方法 (app.js)
@@ -501,24 +485,17 @@ new Vue({
         
         // 添加菜品
         saveDish(dishData) {
-            console.log("接收到新添加的菜品数据:", dishData);
-            
             // 显示成功通知
             this.showNotification('菜品添加成功', 'success');
             
             // 切换到菜单页面
             this.activeTab = 'menu';
             
-            // 刷新菜单数据
-            this.$nextTick(() => {
-                if (this.$refs.menuComponent) {
-                    // 强制刷新菜单数据
-                    this.$refs.menuComponent.fetchDishes();
-                    console.log("已触发菜单刷新");
-                } else {
-                    console.warn("无法找到菜单组件引用");
-                }
-            });
+            // 如果新菜品与当前类别相同，则刷新菜单
+            if (dishData.category === this.activeCategory) {
+                // 触发类别变化以刷新菜单
+                this.changeCategory(this.activeCategory);
+            }
         },
         
         // 显示评价表单

@@ -116,5 +116,49 @@
         "timestamp": "2025-03-15T13:40:25.610162",
         "note": "",
         "updated_at": "2025-03-15T13:40:32.730782"
+    },
+    {
+        "id": "b2e57759-e8ee-4fe7-80a4-448ca57f08c9",
+        "items": [
+            {
+                "dish_id": "b8c9d0e1-f2a3-b4c5-d6e7-f8a9b0c1d2e3",
+                "dish_name": "拿铁咖啡",
+                "quantity": 1,
+                "price": 22,
+                "total": 22,
+                "image_path": "/static/images/dishes/0e0464cb-733c-4f83-8c80-b2cbe1cf4826.jpg"
+            }
+        ],
+        "total_price": 22,
+        "status": "completed",
+        "timestamp": "2025-03-15T15:42:50.024755",
+        "note": "",
+        "updated_at": "2025-03-15T17:04:15.146749"
+    },
+    {
+        "id": "d094abc3-07a2-4911-9748-f9e928725c1f",
+        "items": [
+            {
+                "dish_id": "e4b7f6a8-c23d-4e7a-b8f9-1c5d6a7e8b9c",
+                "dish_name": "红烧肉",
+                "quantity": 1,
+                "price": 48,
+                "total": 48,
+                "image_path": "/static/images/dishes/df2b32d2-da54-450f-9b3e-e4b9bce8b6b5.jpg"
+            },
+            {
+                "dish_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+                "dish_name": "宫保鸡丁",
+                "quantity": 1,
+                "price": 38,
+                "total": 38,
+                "image_path": "/static/images/dishes/566b47f9-95f8-47f7-91b7-280e3cce6842.jpg"
+            }
+        ],
+        "total_price": 86,
+        "status": "ready",
+        "timestamp": "2025-03-15T21:07:53.520543",
+        "note": "一定要好吃",
+        "updated_at": "2025-03-15T21:27:02.121206"
     }
 ]

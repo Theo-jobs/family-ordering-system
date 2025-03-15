@@ -61,21 +61,18 @@ Vue.component('review-component', {
                                 required></textarea>
                         </div>
                         
-                        <!-- 上传图片 -->
+                        <!-- 评价图片上传 -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">上传图片 (可选)</label>
+                            <label class="form-label fw-bold">添加图片 <span class="text-muted">(可选，最多3张)</span></label>
                             
-                            <!-- 图片预览 -->
-                            <div v-if="imagePreview.length > 0" class="image-preview-container mb-3">
-                                <div class="d-flex flex-wrap gap-2">
-                                    <div v-for="(img, index) in imagePreview" :key="index" class="position-relative">
-                                        <img :src="img" class="review-image" alt="评价图片"
-                                             @click="previewImage = img">
-                                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" 
-                                                @click="removeImage(index)">
-                                            <i class="bi bi-x"></i>
-                                        </button>
-                                    </div>
+                            <!-- 图片预览区域 -->
+                            <div v-if="imagePreview.length > 0" class="review-images mb-3">
+                                <div v-for="(img, index) in imagePreview" :key="index" class="position-relative">
+                                    <img :src="img" class="review-image" alt="评价图片"
+                                        @click="previewImage = img">
+                                    <button type="button" class="btn-close position-absolute top-0 end-0 bg-danger text-white p-1 m-1 rounded-circle" 
+                                        @click="removeImage(index)">
+                                    </button>
                                 </div>
                             </div>
                             
@@ -112,13 +109,13 @@ Vue.component('review-component', {
                 </div>
             </div>
             
-            <!-- 图片预览弹窗 -->
-            <div v-if="previewImage" class="image-viewer" @click="previewImage = null">
-                <div class="image-viewer-content">
-                    <img :src="previewImage" class="full-image">
-                    <div class="mt-3 text-white text-center">
-                        <p>点击任意位置关闭</p>
-                    </div>
+            <!-- 图片全屏预览 -->
+            <div v-if="previewImage" class="review-image-preview" @click="previewImage = null">
+                <div class="review-image-preview-content">
+                    <img :src="previewImage" alt="评价图片">
+                    <button class="close-review-preview" @click.stop="previewImage = null">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -129,25 +126,40 @@ Vue.component('review-component', {
         },
         onFileSelected(event) {
             const files = event.target.files;
-            if (!files || files.length === 0) return;
+            if (!files.length) return;
             
-            // 处理每个选择的文件
+            // 限制最多3张图片
+            if (this.images.length + files.length > 3) {
+                this.error = '最多只能上传3张图片';
+                setTimeout(() => {
+                    this.error = '';
+                }, 3000);
+                return;
+            }
+            
+            // 处理每个文件
             Array.from(files).forEach(file => {
-                // 验证文件类型
+                // 检查文件类型
                 if (!file.type.match('image.*')) {
-                    this.error = '请选择图片文件';
+                    this.error = '只能上传图片文件';
+                    setTimeout(() => {
+                        this.error = '';
+                    }, 3000);
                     return;
                 }
                 
-                // 验证文件大小（限制为5MB）
-                if (file.size > 5 * 1024 * 1024) {
-                    this.error = '图片大小不能超过5MB';
+                // 检查文件大小 (限制为2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    this.error = '图片大小不能超过2MB';
+                    setTimeout(() => {
+                        this.error = '';
+                    }, 3000);
                     return;
                 }
                 
-                // 读取文件为DataURL
+                // 创建FileReader读取文件
                 const reader = new FileReader();
-                reader.onload = e => {
+                reader.onload = (e) => {
                     const imageData = e.target.result;
                     this.images.push(imageData);
                     this.imagePreview.push(imageData);
@@ -155,7 +167,7 @@ Vue.component('review-component', {
                 reader.readAsDataURL(file);
             });
             
-            // 清除输入，允许重复选择同一文件
+            // 清空input，允许重复选择同一文件
             event.target.value = '';
         },
         removeImage(index) {
@@ -179,6 +191,7 @@ Vue.component('review-component', {
             // 准备评价数据
             const reviewData = {
                 dish_id: this.dish.id,
+                order_id: this.dish.order_id,
                 rating: this.rating,
                 comment: this.comment,
                 images: this.images
