@@ -98,5 +98,23 @@
         "timestamp": "2025-03-15T02:21:25.918777",
         "note": "好吃要",
         "updated_at": "2025-03-15T02:21:33.367139"
+    },
+    {
+        "id": "daab0aa5-b65c-4ef6-aecc-fe393a8ce7a9",
+        "items": [
+            {
+                "dish_id": "77095afd-d2f3-4f0a-8da8-452bf46c7727",
+                "dish_name": "拿铁",
+                "quantity": 1,
+                "price": 8.0,
+                "total": 8.0,
+                "image_path": "/static/images/dishes/5545311f-0086-4b67-be01-796cae08b472.jpg"
+            }
+        ],
+        "total_price": 8.0,
+        "status": "completed",
+        "timestamp": "2025-03-15T13:40:25.610162",
+        "note": "",
+        "updated_at": "2025-03-15T13:40:32.730782"
     }
 ]

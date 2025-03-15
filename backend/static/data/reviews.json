@@ -144,5 +144,16 @@
         "image_paths": [],
         "timestamp": "2025-03-15T02:54:36.437547",
         "user_name": "匿名用户"
+    },
+    {
+        "id": "b02380ee-ed74-4698-9136-71019a7a9529",
+        "dish_id": "77095afd-d2f3-4f0a-8da8-452bf46c7727",
+        "rating": 5,
+        "comment": "老婆做的拿铁 好好喝",
+        "image_paths": [
+            "/static/images/reviews/85501809-edbc-4d26-8785-c0b3d012d4c5.jpg"
+        ],
+        "timestamp": "2025-03-15T13:41:07.364699",
+        "user_name": "匿名用户"
     }
 ]

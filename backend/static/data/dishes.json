@@ -252,5 +252,25 @@
         ],
         "image_path": "/static/images/dishes/88cda3ff-626c-4792-95ea-fc39d8b171b6.jpg",
         "timestamp": "2025-03-15T00:57:39.501556"
+    },
+    {
+        "id": "77095afd-d2f3-4f0a-8da8-452bf46c7727",
+        "name": "拿铁",
+        "category": "coffee",
+        "price": 8,
+        "description": "半自动咖啡机磨粉+牛奶打泡",
+        "ingredients": [
+            "阿拉比卡咖啡豆",
+            "每日鲜语4.0鲜牛奶"
+        ],
+        "steps": [
+            "半自动咖啡机加入20g左右咖啡豆",
+            "选用到espresso，模式",
+            "选择ok等待",
+            "加入200-300ml牛奶打泡",
+            "咖啡液倒入打泡完的牛奶进行拉花"
+        ],
+        "image_path": "/static/images/dishes/5545311f-0086-4b67-be01-796cae08b472.jpg",
+        "timestamp": "2025-03-15T13:46:41.082615"
     }
 ]
